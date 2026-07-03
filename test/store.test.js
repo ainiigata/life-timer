@@ -72,3 +72,49 @@ test('importJSON: 不正データは理由つきで拒否', () => {
 test('newId: 呼ぶたびに異なるIDを返す', () => {
   assert.notEqual(LifeStore.newId(), LifeStore.newId());
 });
+
+test('validate: family[].id が数値 → ok:false', () => {
+  const bad = JSON.parse(JSON.stringify(VALID));
+  bad.family[0].id = 12345;
+  assert.equal(LifeStore.validate(bad).ok, false);
+  assert.match(LifeStore.validate(bad).error, /家族のID/);
+});
+
+test('validate: wishes[].id が欠落 → ok:false', () => {
+  const bad = JSON.parse(JSON.stringify(VALID));
+  delete bad.wishes[0].id;
+  assert.equal(LifeStore.validate(bad).ok, false);
+  assert.match(LifeStore.validate(bad).error, /やりたいことのID/);
+});
+
+test('validate: wishes[].createdAt が数値 → ok:false', () => {
+  const bad = JSON.parse(JSON.stringify(VALID));
+  bad.wishes[0].createdAt = 1234567890;
+  assert.equal(LifeStore.validate(bad).ok, false);
+  assert.match(LifeStore.validate(bad).error, /createdAt/);
+});
+
+test('validate: wishes[].doneAt が数値 → ok:false', () => {
+  const bad = JSON.parse(JSON.stringify(VALID));
+  bad.wishes[0].doneAt = 1234567890;
+  assert.equal(LifeStore.validate(bad).ok, false);
+  assert.match(LifeStore.validate(bad).error, /doneAt/);
+});
+
+test('validate: wishes[].doneAt が null または文字列 → ok:true', () => {
+  const ok1 = JSON.parse(JSON.stringify(VALID));
+  ok1.wishes[0].doneAt = null;
+  assert.equal(LifeStore.validate(ok1).ok, true);
+
+  const ok2 = JSON.parse(JSON.stringify(VALID));
+  ok2.wishes[0].doneAt = '2026-07-04';
+  assert.equal(LifeStore.validate(ok2).ok, true);
+});
+
+test('isValidDateStr: "2026-02-30" (存在しない日付) → false', () => {
+  assert.equal(LifeStore.isValidDateStr('2026-02-30'), false);
+});
+
+test('isValidDateStr: "2026-02-28" (有効な日付) → true', () => {
+  assert.equal(LifeStore.isValidDateStr('2026-02-28'), true);
+});

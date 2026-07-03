@@ -20,6 +20,9 @@
     const now = new Date();
     if (d > now) return false;
     if (now.getFullYear() - d.getFullYear() > 150) return false;
+    // ラウンドトリップ検証: 入力の年月日と解析後の年月日が一致することを確認
+    const [year, month, day] = s.split('-').map(Number);
+    if (d.getFullYear() !== year || d.getMonth() + 1 !== month || d.getDate() !== day) return false;
     return true;
   }
 
@@ -43,6 +46,7 @@
     }
     if (!Array.isArray(data.family)) return { ok: false, error: 'family が配列ではありません' };
     for (const f of data.family) {
+      if (typeof f.id !== 'string' || f.id === '') return { ok: false, error: '家族のIDが不正です' };
       const e = validPerson(f);
       if (e) return { ok: false, error: '家族: ' + e };
       if (typeof f.name !== 'string' || f.name === '') return { ok: false, error: '家族の名前が空です' };
@@ -54,6 +58,11 @@
     for (const w of data.wishes) {
       if (!w || typeof w.title !== 'string' || w.title === '') return { ok: false, error: 'やりたいことのタイトルが不正です' };
       if (typeof w.done !== 'boolean') return { ok: false, error: 'done がboolean ではありません' };
+      if (typeof w.id !== 'string' || w.id === '') return { ok: false, error: 'やりたいことのIDが不正です' };
+      if (typeof w.createdAt !== 'string' || w.createdAt === '') return { ok: false, error: 'createdAt が不正です' };
+      if (w.doneAt !== null && (typeof w.doneAt !== 'string' || w.doneAt === '')) {
+        return { ok: false, error: 'doneAt が不正です' };
+      }
       if (w.targetAge != null &&
           !(typeof w.targetAge === 'number' && w.targetAge > 0 && w.targetAge <= 150)) {
         return { ok: false, error: '目標年齢が不正です(1〜150)' };
