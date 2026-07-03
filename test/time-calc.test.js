@@ -37,6 +37,16 @@ test('expectedDeathDate: customLifespan優先', () => {
   assert.ok(Math.abs(d.getTime() - expect) < 86400000);
 });
 
+test('expectedDeathDate: customLifespan=0 は 0 を有効値として使用(null/undefined と区別)', () => {
+  const now = new Date(2026, 6, 4);
+  const d = TimeCalc.expectedDeathDate(
+    { birthDate: '2026-07-04', gender: 'male', customLifespan: 0 }, now);
+  // 誕生から0年後(誕生日当日、±1日以内)
+  const birth = TimeCalc.parseDate('2026-07-04').getTime();
+  const diff = Math.abs(d.getTime() - birth);
+  assert.ok(diff < 86400000, `death should be ~= birth (diff: ${diff}ms)`);
+});
+
 test('expectedDeathDate: 余命テーブル使用時は now+余命', () => {
   const now = new Date(2026, 6, 4);
   const d = TimeCalc.expectedDeathDate({ birthDate: '1986-07-04', gender: 'male' }, now);
@@ -57,6 +67,11 @@ test('freqPerYear: 全頻度', () => {
   assert.equal(TimeCalc.freqPerYear('monthly'), 12);
   assert.equal(TimeCalc.freqPerYear('yearly-2'), 2);
   assert.throws(() => TimeCalc.freqPerYear('sometimes'));
+});
+
+test('freqPerYear: yearly-0 は error、yearly-1 は有効', () => {
+  assert.throws(() => TimeCalc.freqPerYear('yearly-0'));
+  assert.equal(TimeCalc.freqPerYear('yearly-1'), 1);
 });
 
 test('meetCount: 先に尽きる側が上限になる', () => {

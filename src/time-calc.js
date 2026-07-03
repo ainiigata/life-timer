@@ -50,7 +50,7 @@
 
   function expectedDeathDate(person, now) {
     const birth = parseDate(person.birthDate);
-    if (person.customLifespan) {
+    if (person.customLifespan != null) {
       return new Date(birth.getTime() + person.customLifespan * MS_PER_YEAR);
     }
     const age = (now - birth) / MS_PER_YEAR;
@@ -69,7 +69,11 @@
   function freqPerYear(freq) {
     if (FREQ_PER_YEAR[freq]) return FREQ_PER_YEAR[freq];
     const m = /^yearly-(\d+)$/.exec(freq);
-    if (m) return Number(m[1]);
+    if (m) {
+      const n = Number(m[1]);
+      if (n < 1) throw new Error('unknown frequency: ' + freq);
+      return n;
+    }
     throw new Error('unknown frequency: ' + freq);
   }
 
