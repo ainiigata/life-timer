@@ -1,0 +1,43 @@
+const { test } = require('node:test');
+const assert = require('node:assert');
+const { execFileSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const root = path.join(__dirname, '..');
+const distPath = path.join(root, 'dist', 'index.html');
+
+execFileSync(process.execPath, ['build.js'], { cwd: root });
+const html = fs.readFileSync(distPath, 'utf-8');
+
+test('INJECTマーカーが残っていない', () => {
+  assert.ok(!html.includes('INJECT'));
+});
+
+test('外部リソース参照ゼロ(src/href属性にhttpなし)', () => {
+  assert.ok(!/\b(src|href)\s*=\s*["']https?:/i.test(html));
+});
+
+test('通信APIを使用していない(localStorageは使用する)', () => {
+  assert.ok(!/\bfetch\s*\(/.test(html));
+  assert.ok(!/XMLHttpRequest/.test(html));
+  assert.ok(!/\bindexedDB\b/i.test(html));
+});
+
+test('CSPメタタグがある', () => {
+  assert.ok(html.includes('Content-Security-Policy'));
+  assert.ok(html.includes("default-src 'none'"));
+});
+
+test('script閉じタグの早期終了がない', () => {
+  const open = (html.match(/<script>/g) || []).length;
+  const close = (html.match(/<\/script>/g) || []).length;
+  assert.equal(open, close);
+  assert.equal(open, 4);
+});
+
+test('主要モジュールが同梱されている', () => {
+  assert.ok(html.includes('LifeTable'));
+  assert.ok(html.includes('TimeCalc'));
+  assert.ok(html.includes('LifeStore'));
+});
