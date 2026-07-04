@@ -875,3 +875,177 @@ dialog::backdrop {
     margin: 0 auto;
   }
 }
+
+/* ============================================================
+   Desktop / Tablet Layout (≥ 768px)
+   ADDITIVE ONLY — existing mobile rules are untouched above.
+   ============================================================ */
+@media (min-width: 768px) {
+  :root {
+    --page-pad: 40px;
+    /* Column max-width for all content */
+    --col-width: 600px;
+  }
+
+  /* Body gets a warm mid-tone to frame the centered column */
+  body {
+    background-color: var(--cream-dark);
+    background-image:
+      radial-gradient(ellipse at 15% 8%,  rgba(255,138,61,0.06) 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 92%, rgba(255,138,61,0.05) 0%, transparent 55%),
+      radial-gradient(ellipse at 50% 50%, rgba(255,248,238,0.80) 0%, transparent 80%);
+  }
+
+  /* ── App shell: centered column with warm paper shadow ── */
+  #app {
+    max-width: var(--col-width);
+    margin: 0 auto;
+    background: var(--cream);
+    box-shadow:
+      0 2px 2px  rgba(45, 26, 14, 0.04),
+      0 8px 32px rgba(45, 26, 14, 0.10),
+      0 0   0 1px rgba(45, 26, 14, 0.04);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    min-height: 100vh;
+  }
+
+  /* ── Screens already fill #app; keep them full-width inside ── */
+  .screen {
+    padding-left: var(--page-pad);
+    padding-right: var(--page-pad);
+  }
+
+  /* ── Remove the narrow max-width set at 600px since #app handles it ── */
+  #screen-family,
+  #screen-wishes {
+    max-width: none;
+    margin: 0;
+  }
+
+  /* ── Tab bar: centered + floating pill over the column ── */
+  .tab-bar {
+    left: 50%;
+    transform: translateX(-50%);
+    width: var(--col-width);
+    /* Floating pill: detach from full-width edge, add rounding + shadow */
+    border-top: none;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    box-shadow:
+      0 -4px 24px rgba(45, 26, 14, 0.12),
+      0 0 0 1.5px rgba(45, 26, 14, 0.06);
+    overflow: hidden; /* clip children to pill radius */
+  }
+
+  /* ── Source note: also centered under the column ── */
+  .source-note {
+    left: 50%;
+    transform: translateX(-50%);
+    width: var(--col-width);
+    border-left:  1px solid var(--warm-gray-lt);
+    border-right: 1px solid var(--warm-gray-lt);
+    border-radius: 0;
+  }
+
+  /* ── Countdown: larger on desktop via clamp ── */
+  .countdown {
+    font-size: clamp(2rem, 3.5vw, 2.6rem);
+    letter-spacing: 0.06em;
+    padding: 36px 24px;
+  }
+
+  /* ── Onboarding & settings: constrain form width for readability ── */
+  #onboarding form,
+  #settings-form {
+    max-width: 420px;
+  }
+
+  /* ── Self-timer: a little more breathing room at top ── */
+  #self-timer {
+    padding-top: 64px;
+  }
+
+  #onboarding {
+    padding-top: 80px;
+  }
+}
+
+/* ============================================================
+   Wide desktop refinements (≥ 1024px)
+   ============================================================ */
+@media (min-width: 1024px) {
+  :root {
+    --col-width: 620px;
+  }
+
+  .countdown {
+    font-size: clamp(2.4rem, 2.8vw, 3rem);
+  }
+}
+
+/* ============================================================
+   Hover environment — pointer device interactions
+   ============================================================ */
+@media (hover: hover) {
+  /* Tab buttons */
+  .tab-btn:hover:not(.active) {
+    color: var(--brown-mid);
+    background: var(--orange-pale);
+  }
+
+  /* Family cards */
+  #family-list li:hover {
+    border-color: var(--orange-light);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  /* Wish list items */
+  #wish-list li:hover {
+    border-color: var(--orange-light);
+    box-shadow: var(--shadow);
+    transform: translateY(-1px);
+  }
+
+  /* Primary / submit buttons */
+  button[type="submit"]:hover,
+  button:not(.tab-btn):not(.ghost-btn):not(.danger-btn):not(.file-btn):not(#open-settings):hover {
+    background: var(--orange-dark);
+    box-shadow: 0 6px 20px rgba(255, 138, 61, 0.45);
+    transform: translateY(-1px);
+  }
+
+  button[type="submit"]:active,
+  button:not(.tab-btn):not(.ghost-btn):not(.danger-btn):not(.file-btn):not(#open-settings):active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  /* Ghost button enhanced */
+  .ghost-btn:hover {
+    border-color: var(--orange);
+    color: var(--orange-dark);
+    background: var(--orange-pale);
+    transform: translateY(-1px);
+  }
+
+  /* File button */
+  .file-btn:hover {
+    background: var(--orange-pale);
+    border-color: var(--orange-light);
+    transform: translateY(-1px);
+  }
+
+  /* Danger button */
+  .danger-btn:hover {
+    background: #fad7d3;
+    border-color: rgba(192, 57, 43, 0.5);
+    transform: translateY(-1px);
+  }
+
+  /* Form inputs: slightly warmer focus ring on hover */
+  form input[type="date"]:hover,
+  form input[type="number"]:hover,
+  form input[type="text"]:hover,
+  form select:hover {
+    border-color: var(--orange-light);
+  }
+}
