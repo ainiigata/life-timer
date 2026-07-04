@@ -7,6 +7,8 @@
   let data = null;
   let deathDates = { self: null, family: new Map() }; // データ変更時にのみ再計算
   let timerId = null;
+  let selfView = 'timer'; // 'timer' | 'settings'
+  let celebrateTimer = null;
 
   function recomputeDeathDates() {
     const now = new Date();
@@ -42,7 +44,8 @@
   function renderSelf() {
     const has = !!data.self;
     $('onboarding').hidden = has;
-    $('self-timer').hidden = !has;
+    $('self-timer').hidden = !has || selfView !== 'timer';
+    $('settings').hidden = !has || selfView !== 'settings';
     if (!has) return;
     const now = new Date();
     const b = TimeCalc.breakdown(now, deathDates.self);
@@ -179,7 +182,8 @@
     for (const w of done) {
       const li = document.createElement('li');
       li.className = 'wish-item done';
-      li.innerHTML = `<label><input type="checkbox" checked data-wish="${w.id}"> <span class="wish-title"></span></label>`;
+      li.innerHTML = `<label><input type="checkbox" checked data-wish="${w.id}"> <span class="wish-title"></span></label>
+        <button class="ghost-btn" data-del-wish="${w.id}" aria-label="削除">×</button>`;
       li.querySelector('.wish-title').textContent = w.title;
       doneList.appendChild(li);
     }
@@ -199,6 +203,7 @@
   });
 
   function celebrate() {
+    clearTimeout(celebrateTimer);
     const el = $('celebrate');
     el.textContent = '';
     for (let i = 0; i < 24; i++) {
@@ -210,7 +215,7 @@
       el.appendChild(s);
     }
     el.hidden = false;
-    setTimeout(() => { el.hidden = true; }, 2200);
+    celebrateTimer = setTimeout(() => { el.hidden = true; }, 2200);
   }
 
   document.addEventListener('change', (e) => {
@@ -238,13 +243,13 @@
     $('set-birth').value = data.self.birthDate;
     $('set-gender').value = data.self.gender;
     $('set-lifespan').value = data.self.customLifespan || '';
-    $('self-timer').hidden = true;
-    $('settings').hidden = false;
+    selfView = 'settings';
+    renderSelf();
   });
 
   $('close-settings').addEventListener('click', () => {
-    $('settings').hidden = true;
-    $('self-timer').hidden = false;
+    selfView = 'timer';
+    renderSelf();
   });
 
   $('settings-form').addEventListener('submit', (e) => {
@@ -261,7 +266,7 @@
       gender: $('set-gender').value,
       customLifespan: span ? Number(span) : null,
     };
-    $('settings').hidden = true;
+    selfView = 'timer';
     persist();
   });
 

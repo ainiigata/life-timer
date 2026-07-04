@@ -7,7 +7,12 @@ const path = require('node:path');
 const root = path.join(__dirname, '..');
 const distPath = path.join(root, 'dist', 'index.html');
 
-execFileSync(process.execPath, ['build.js'], { cwd: root });
+try {
+  execFileSync(process.execPath, ['build.js'], { cwd: root });
+} catch (e) {
+  console.error('ビルド失敗:', e.stderr ? String(e.stderr) : e.message);
+  process.exit(1);
+}
 const html = fs.readFileSync(distPath, 'utf-8');
 
 test('INJECTマーカーが残っていない', () => {

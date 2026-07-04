@@ -536,10 +536,8 @@ button:not(.tab-btn):not(.ghost-btn):not(.danger-btn):not(.file-btn):not(#open-s
   padding: 16px 18px;
   margin-bottom: 10px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  cursor: pointer;
+  flex-direction: column;
+  gap: 4px;
   border: 1.5px solid var(--warm-gray-lt);
   transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
   animation: cardIn 0.22s ease both;
@@ -556,15 +554,35 @@ button:not(.tab-btn):not(.ghost-btn):not(.danger-btn):not(.file-btn):not(#open-s
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.family-card-name {
+.family-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.family-head strong {
   font-family: var(--font-serif);
   font-size: 1rem;
   font-weight: 700;
   color: var(--brown);
 }
 
-.family-card-meet {
-  font-size: 0.78rem;
+.family-remain {
+  font-size: 0.88rem;
+  color: var(--brown-light);
+  margin: 4px 0 2px;
+}
+
+.family-meets {
+  font-size: 0.82rem;
+  color: var(--brown-light);
+  margin: 0;
+}
+
+.meets-num {
+  font-size: 0.9rem;
   color: var(--orange-dark);
   font-weight: 700;
   white-space: nowrap;
@@ -698,27 +716,13 @@ dialog::backdrop {
   opacity: 0.6;
 }
 
-.wish-check {
+.wish-item input[type="checkbox"] {
   width: 22px;
   height: 22px;
-  border-radius: 50%;
-  border: 2px solid var(--warm-gray-lt);
-  background: transparent;
+  accent-color: var(--orange);
   cursor: pointer;
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background var(--transition), border-color var(--transition);
-  padding: 0;
-  box-shadow: none;
-  width: 22px;
-}
-
-.wish-check.done {
-  background: var(--orange);
-  border-color: var(--orange);
-  color: var(--white);
+  border-radius: 50%;
 }
 
 .wish-title {
@@ -728,12 +732,12 @@ dialog::backdrop {
   font-family: var(--font-sans);
 }
 
-.wish-done-title {
+.wish-item.done .wish-title {
   text-decoration: line-through;
-  color: var(--warm-gray);
+  opacity: 0.6;
 }
 
-.wish-age-tag {
+.wish-remain {
   font-size: 0.72rem;
   color: var(--orange);
   font-weight: 700;
