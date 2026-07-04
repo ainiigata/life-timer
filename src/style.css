@@ -1,1 +1,873 @@
-/* 人生タイマー スタイル(Task 5で実装) */
+/* 人生タイマー — warm editorial aesthetic */
+/* System font stack: Noto Serif/Sans JP (pre-installed on Android/macOS/iOS) + fallbacks */
+/* No external font loading — works fully offline within CSP default-src 'none' */
+
+/* ============================================================
+   CSS Variables
+   ============================================================ */
+:root {
+  --orange:       #ff8a3d;
+  --orange-dark:  #e06820;
+  --orange-light: #ffb380;
+  --orange-pale:  #fff1e6;
+  --cream:        #fffdf7;
+  --cream-dark:   #fff8ee;
+  --brown:        #2d1a0e;
+  --brown-mid:    #6b3e1e;
+  --brown-light:  #a0673a;
+  --warm-gray:    #c8b8a8;
+  --warm-gray-lt: #ede5d8;
+  --danger:       #c0392b;
+  --danger-light: #fdf0ee;
+  --white:        #ffffff;
+
+  --font-serif:  'Noto Serif JP', 'Hiragino Mincho ProN', Georgia, serif;
+  --font-sans:   'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+  --font-mono:   'Iosevka', 'JetBrains Mono', 'Courier New', monospace;
+
+  --tab-height:   56px;
+  --safe-bottom:  env(safe-area-inset-bottom, 0px);
+  --page-pad:     20px;
+  --radius:       12px;
+  --radius-sm:    8px;
+  --radius-lg:    20px;
+  --shadow:       0 2px 12px rgba(45, 26, 14, 0.10);
+  --shadow-md:    0 4px 24px rgba(45, 26, 14, 0.15);
+  --shadow-lg:    0 8px 40px rgba(45, 26, 14, 0.20);
+
+  --transition:   0.2s ease;
+}
+
+/* ============================================================
+   Reset & Base
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  height: 100%;
+  font-size: 16px;
+}
+
+body {
+  min-height: 100%;
+  background: var(--cream);
+  color: var(--brown);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  /* Subtle warm paper texture via repeating gradient */
+  background-image:
+    radial-gradient(ellipse at 20% 10%, rgba(255,138,61,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 90%, rgba(255,138,61,0.03) 0%, transparent 60%);
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   App Shell
+   ============================================================ */
+#app {
+  min-height: calc(100vh - var(--tab-height) - var(--safe-bottom));
+  padding-bottom: calc(var(--tab-height) + var(--safe-bottom) + 48px); /* +48 for source-note */
+}
+
+/* ============================================================
+   Screens
+   ============================================================ */
+.screen {
+  display: none;
+  padding: 0 var(--page-pad);
+  animation: screenIn 0.28s ease both;
+}
+
+.screen.active {
+  display: block;
+}
+
+@keyframes screenIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   Typography
+   ============================================================ */
+h1 {
+  font-family: var(--font-serif);
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: var(--brown);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--brown);
+  margin-bottom: 16px;
+}
+
+h3 {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--brown-mid);
+  margin: 20px 0 10px;
+}
+
+p {
+  font-size: 0.9rem;
+  color: var(--brown-light);
+}
+
+/* ============================================================
+   Tab Bar
+   ============================================================ */
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--tab-height) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background: var(--white);
+  border-top: 1.5px solid var(--warm-gray-lt);
+  display: flex;
+  align-items: stretch;
+  z-index: 100;
+  box-shadow: 0 -2px 16px rgba(45, 26, 14, 0.08);
+}
+
+.tab-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--warm-gray);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  transition: color var(--transition), background var(--transition);
+  padding: 0;
+  position: relative;
+  letter-spacing: 0.02em;
+}
+
+.tab-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 40px;
+  height: 2px;
+  background: var(--orange);
+  border-radius: 0 0 2px 2px;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tab-btn.active {
+  color: var(--orange);
+  font-weight: 700;
+}
+
+.tab-btn.active::before {
+  transform: translateX(-50%) scaleX(1);
+}
+
+.tab-btn:active {
+  background: var(--orange-pale);
+}
+
+/* Tab icons (unicode decorative) */
+.tab-btn[data-tab="self"]::after    { content: '◎'; font-size: 1.1rem; }
+.tab-btn[data-tab="family"]::after  { content: '♡'; font-size: 1.1rem; }
+.tab-btn[data-tab="wishes"]::after  { content: '✦'; font-size: 1.1rem; }
+
+/* ============================================================
+   Onboarding
+   ============================================================ */
+#onboarding {
+  padding-top: 64px;
+  padding-bottom: 40px;
+}
+
+#onboarding h1 {
+  font-size: 2.2rem;
+  margin-bottom: 8px;
+  /* Orange accent underline on the title */
+  background: linear-gradient(90deg, var(--orange) 0%, var(--orange-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+#onboarding > p {
+  font-size: 0.92rem;
+  color: var(--brown-light);
+  margin-bottom: 36px;
+  line-height: 1.75;
+}
+
+/* ============================================================
+   Forms
+   ============================================================ */
+form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--brown-mid);
+  letter-spacing: 0.04em;
+  margin-bottom: 20px;
+}
+
+form input[type="date"],
+form input[type="number"],
+form input[type="text"],
+form select {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--white);
+  border: 1.5px solid var(--warm-gray-lt);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  color: var(--brown);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+form input:focus,
+form select:focus {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(255, 138, 61, 0.15);
+}
+
+form input::placeholder {
+  color: var(--warm-gray);
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+button[type="submit"],
+button:not(.tab-btn):not(.ghost-btn):not(.danger-btn):not(.file-btn):not(#open-settings) {
+  display: inline-block;
+  width: 100%;
+  padding: 14px 20px;
+  background: var(--orange);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+  box-shadow: 0 3px 12px rgba(255, 138, 61, 0.35);
+  margin-top: 4px;
+}
+
+button[type="submit"]:hover,
+button:not(.tab-btn):not(.ghost-btn):not(.danger-btn):not(.file-btn):not(#open-settings):hover {
+  background: var(--orange-dark);
+  box-shadow: 0 4px 16px rgba(255, 138, 61, 0.45);
+}
+
+button[type="submit"]:active,
+button:not(.tab-btn):not(.ghost-btn):not(.danger-btn):not(.file-btn):not(#open-settings):active {
+  transform: scale(0.98);
+}
+
+/* Ghost button */
+.ghost-btn {
+  display: inline-block;
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--brown-light);
+  border: 1.5px solid var(--warm-gray-lt);
+  border-radius: var(--radius);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color var(--transition), color var(--transition), background var(--transition);
+}
+
+.ghost-btn:hover {
+  border-color: var(--orange-light);
+  color: var(--orange-dark);
+  background: var(--orange-pale);
+}
+
+/* Danger button */
+.danger-btn {
+  display: inline-block;
+  padding: 12px 20px;
+  background: var(--danger-light);
+  color: var(--danger);
+  border: 1.5px solid rgba(192, 57, 43, 0.25);
+  border-radius: var(--radius);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.danger-btn:hover {
+  background: #fad7d3;
+  border-color: rgba(192, 57, 43, 0.5);
+}
+
+/* File-label button */
+.file-btn {
+  display: inline-block;
+  padding: 12px 20px;
+  background: var(--cream-dark);
+  color: var(--brown-mid);
+  border: 1.5px solid var(--warm-gray-lt);
+  border-radius: var(--radius);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition);
+  margin-top: 8px;
+}
+
+.file-btn:hover {
+  background: var(--orange-pale);
+  border-color: var(--orange-light);
+}
+
+/* ============================================================
+   Self-Timer Screen (Countdown)
+   ============================================================ */
+#self-timer {
+  padding-top: 48px;
+  text-align: center;
+}
+
+.timer-label {
+  font-family: var(--font-serif);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 12px;
+}
+
+/* THE COUNTDOWN — star of the show */
+.countdown {
+  font-family: var(--font-mono);
+  font-size: clamp(1.2rem, 7vw, 1.6rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--brown);
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+  padding: 28px 16px;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  margin: 0 0 20px;
+  /* Subtle inner warm glow */
+  border: 1.5px solid var(--orange-pale);
+  position: relative;
+  overflow: hidden;
+  word-break: break-all;
+}
+
+/* Warm shimmer line at top of countdown box */
+.countdown::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--orange-light), var(--orange), var(--orange-light));
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+/* ============================================================
+   Progress Bar
+   ============================================================ */
+.progress-track {
+  height: 8px;
+  background: var(--warm-gray-lt);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--orange-light) 0%, var(--orange) 60%, var(--orange-dark) 100%);
+  border-radius: 999px;
+  transition: width 1s linear;
+  min-width: 2px;
+}
+
+#progress-text {
+  font-size: 0.78rem;
+  color: var(--warm-gray);
+  margin-bottom: 20px;
+  letter-spacing: 0.02em;
+}
+
+.message {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--orange-dark);
+  margin-bottom: 28px;
+  font-style: italic;
+  letter-spacing: 0.02em;
+}
+
+#open-settings {
+  width: auto;
+  margin-top: 0;
+}
+
+/* ============================================================
+   Settings Panel
+   ============================================================ */
+#settings {
+  padding-top: 40px;
+}
+
+#settings h2 {
+  margin-bottom: 24px;
+}
+
+#settings-form button[type="submit"],
+#settings-form .ghost-btn {
+  display: inline-block;
+  width: auto;
+  margin-right: 10px;
+  margin-top: 8px;
+}
+
+#settings-form button[type="submit"] {
+  padding: 12px 28px;
+}
+
+#export-json {
+  width: auto;
+  display: inline-block;
+  padding: 10px 20px;
+  margin-right: 8px;
+  margin-top: 0;
+  font-size: 0.85rem;
+}
+
+#import-result {
+  margin-top: 12px;
+  font-size: 0.82rem;
+  color: var(--brown-mid);
+  min-height: 20px;
+}
+
+/* ============================================================
+   Corrupt Notice
+   ============================================================ */
+#corrupt-notice {
+  padding-top: 64px;
+  text-align: center;
+}
+
+#corrupt-notice h2 {
+  color: var(--danger);
+  margin-bottom: 12px;
+}
+
+#corrupt-notice p {
+  margin-bottom: 28px;
+  line-height: 1.7;
+}
+
+#corrupt-notice .file-btn,
+#corrupt-notice .danger-btn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+/* ============================================================
+   Family Screen
+   ============================================================ */
+#screen-family {
+  padding-top: 36px;
+}
+
+#screen-family h1 {
+  margin-bottom: 24px;
+}
+
+#family-list {
+  list-style: none;
+  margin-bottom: 16px;
+}
+
+#family-list li {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px 18px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  border: 1.5px solid var(--warm-gray-lt);
+  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+  animation: cardIn 0.22s ease both;
+}
+
+#family-list li:hover {
+  border-color: var(--orange-light);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.family-card-name {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--brown);
+}
+
+.family-card-meet {
+  font-size: 0.78rem;
+  color: var(--orange-dark);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+#family-empty {
+  font-size: 0.88rem;
+  color: var(--warm-gray);
+  text-align: center;
+  padding: 36px 0;
+  line-height: 1.7;
+}
+
+#add-family {
+  display: inline-block;
+  width: auto;
+  padding: 12px 24px;
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
+/* ============================================================
+   Dialog (Family Edit)
+   ============================================================ */
+dialog {
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 28px var(--page-pad);
+  width: min(440px, calc(100vw - 32px));
+  background: var(--cream);
+  animation: dialogIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+dialog::backdrop {
+  background: rgba(45, 26, 14, 0.45);
+  backdrop-filter: blur(3px);
+}
+
+@keyframes dialogIn {
+  from { opacity: 0; transform: scale(0.94) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+#family-form h2 {
+  font-size: 1.3rem;
+  margin-bottom: 20px;
+}
+
+#family-form button {
+  display: inline-block;
+  width: auto;
+  margin-right: 8px;
+  margin-top: 8px;
+  padding: 11px 22px;
+  font-size: 0.9rem;
+}
+
+#family-form button[type="submit"] {
+  box-shadow: 0 2px 10px rgba(255,138,61,0.3);
+}
+
+/* ============================================================
+   Wishes Screen
+   ============================================================ */
+#screen-wishes {
+  padding-top: 36px;
+}
+
+#screen-wishes h1 {
+  margin-bottom: 20px;
+}
+
+#wish-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--white);
+  padding: 16px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1.5px solid var(--warm-gray-lt);
+  margin-bottom: 20px;
+}
+
+#wish-form label {
+  display: none; /* inputs have placeholder text */
+}
+
+#wish-form input {
+  margin: 0;
+  padding: 11px 14px;
+}
+
+#wish-form button {
+  align-self: flex-end;
+  width: auto;
+  padding: 11px 24px;
+  font-size: 0.9rem;
+  margin-top: 0;
+}
+
+#wish-list,
+#wish-done-list {
+  list-style: none;
+  margin-bottom: 12px;
+}
+
+#wish-list li,
+#wish-done-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  border: 1.5px solid var(--warm-gray-lt);
+  animation: cardIn 0.22s ease both;
+  transition: border-color var(--transition), opacity var(--transition);
+}
+
+#wish-list li:hover {
+  border-color: var(--orange-light);
+}
+
+#wish-done-list li {
+  opacity: 0.6;
+}
+
+.wish-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--warm-gray-lt);
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition), border-color var(--transition);
+  padding: 0;
+  box-shadow: none;
+  width: 22px;
+}
+
+.wish-check.done {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: var(--white);
+}
+
+.wish-title {
+  flex: 1;
+  font-size: 0.95rem;
+  color: var(--brown);
+  font-family: var(--font-sans);
+}
+
+.wish-done-title {
+  text-decoration: line-through;
+  color: var(--warm-gray);
+}
+
+.wish-age-tag {
+  font-size: 0.72rem;
+  color: var(--orange);
+  font-weight: 700;
+  background: var(--orange-pale);
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+#wish-empty {
+  font-size: 0.88rem;
+  color: var(--warm-gray);
+  text-align: center;
+  padding: 24px 0;
+}
+
+.done-heading {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--warm-gray);
+  margin: 24px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#done-count {
+  font-size: 0.82rem;
+  background: var(--warm-gray-lt);
+  color: var(--brown-light);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+/* ============================================================
+   Source Note (footer)
+   ============================================================ */
+.source-note {
+  position: fixed;
+  bottom: calc(var(--tab-height) + var(--safe-bottom));
+  left: 0;
+  right: 0;
+  background: var(--cream-dark);
+  border-top: 1px solid var(--warm-gray-lt);
+  font-size: 0.6rem;
+  color: var(--warm-gray);
+  padding: 6px var(--page-pad);
+  text-align: center;
+  line-height: 1.5;
+  z-index: 50;
+  letter-spacing: 0.01em;
+}
+
+/* ============================================================
+   Celebrate — Confetti Burst
+   ============================================================ */
+#celebrate {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999;
+  overflow: hidden;
+}
+
+#celebrate:not([hidden]) {
+  display: block;
+}
+
+/* Confetti pieces are injected by JS as span.confetti */
+.confetti {
+  position: absolute;
+  top: -12px;
+  width: 8px;
+  height: 12px;
+  border-radius: 2px;
+  opacity: 0;
+  animation: confettiFall var(--dur, 1.2s) var(--delay, 0s) ease-in both;
+}
+
+@keyframes confettiFall {
+  0%   { opacity: 1; transform: translateY(0) rotate(0deg) scaleX(1); }
+  60%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(100vh) rotate(720deg) scaleX(-1); }
+}
+
+/* ============================================================
+   Utility / Misc
+   ============================================================ */
+[hidden] { display: none !important; }
+
+/* Smooth reveal for panels within screen-self */
+#onboarding,
+#self-timer,
+#settings,
+#corrupt-notice {
+  animation: screenIn 0.28s ease both;
+}
+
+/* Spacing helpers */
+.mt-8  { margin-top: 8px; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+
+/* Focus ring for accessibility */
+:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ============================================================
+   Responsive tweaks (≥ 480px – still mobile first)
+   ============================================================ */
+@media (min-width: 480px) {
+  .countdown {
+    font-size: 1.8rem;
+    letter-spacing: 0.06em;
+  }
+}
+
+@media (min-width: 600px) {
+  :root {
+    --page-pad: 32px;
+  }
+
+  .countdown {
+    font-size: 2rem;
+  }
+
+  #screen-family,
+  #screen-wishes {
+    max-width: 540px;
+    margin: 0 auto;
+  }
+}
