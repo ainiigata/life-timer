@@ -149,6 +149,88 @@
 
   $('fam-cancel').addEventListener('click', () => $('family-dialog').close());
 
+  // --- やりたいこと画面 ---
+  function wishRemainLabel(w) {
+    if (!w.targetAge || !data.self) return '';
+    const deadline = TimeCalc.parseDate(data.self.birthDate);
+    deadline.setFullYear(deadline.getFullYear() + w.targetAge);
+    const b = TimeCalc.breakdown(new Date(), deadline);
+    return b.expired ? `${w.targetAge}歳までに(期限超過)` : `${w.targetAge}歳まで 残り${b.years}年${b.months}ヶ月`;
+  }
+
+  function renderWishes() {
+    const list = $('wish-list');
+    const doneList = $('wish-done-list');
+    list.textContent = '';
+    doneList.textContent = '';
+    const active = data.wishes.filter((w) => !w.done);
+    const done = data.wishes.filter((w) => w.done);
+    $('wish-empty').hidden = active.length > 0;
+    $('done-count').textContent = done.length ? `${done.length}個` : '';
+    for (const w of active) {
+      const li = document.createElement('li');
+      li.className = 'wish-item';
+      li.innerHTML = `<label><input type="checkbox" data-wish="${w.id}"> <span class="wish-title"></span></label>
+        <span class="wish-remain">${wishRemainLabel(w)}</span>
+        <button class="ghost-btn" data-del-wish="${w.id}" aria-label="削除">×</button>`;
+      li.querySelector('.wish-title').textContent = w.title;
+      list.appendChild(li);
+    }
+    for (const w of done) {
+      const li = document.createElement('li');
+      li.className = 'wish-item done';
+      li.innerHTML = `<label><input type="checkbox" checked data-wish="${w.id}"> <span class="wish-title"></span></label>`;
+      li.querySelector('.wish-title').textContent = w.title;
+      doneList.appendChild(li);
+    }
+  }
+
+  $('wish-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const title = $('wish-title').value.trim();
+    if (!title) return;
+    const age = $('wish-age').value ? Number($('wish-age').value) : null;
+    data.wishes.push({
+      id: LifeStore.newId(), title, targetAge: age,
+      done: false, createdAt: new Date().toISOString().slice(0, 10), doneAt: null,
+    });
+    $('wish-form').reset();
+    persist();
+  });
+
+  function celebrate() {
+    const el = $('celebrate');
+    el.textContent = '';
+    for (let i = 0; i < 24; i++) {
+      const s = document.createElement('span');
+      s.className = 'confetti';
+      s.style.left = Math.random() * 100 + 'vw';
+      s.style.animationDelay = Math.random() * 0.4 + 's';
+      s.style.background = ['#ff8a3d', '#ffd23d', '#3dbf6e', '#3d9bff'][i % 4];
+      el.appendChild(s);
+    }
+    el.hidden = false;
+    setTimeout(() => { el.hidden = true; }, 2200);
+  }
+
+  document.addEventListener('change', (e) => {
+    const id = e.target.dataset && e.target.dataset.wish;
+    if (!id) return;
+    const w = data.wishes.find((x) => x.id === id);
+    w.done = e.target.checked;
+    w.doneAt = w.done ? new Date().toISOString().slice(0, 10) : null;
+    if (w.done) celebrate();
+    persist();
+  });
+
+  document.addEventListener('click', (e) => {
+    const id = e.target.dataset && e.target.dataset.delWish;
+    if (!id) return;
+    if (!confirm('このやりたいことを削除しますか?')) return;
+    data.wishes = data.wishes.filter((x) => x.id !== id);
+    persist();
+  });
+
   // --- 毎秒更新 ---
   function tick() {
     if (data && data.self) renderSelf();
@@ -156,9 +238,8 @@
 
   function render() {
     renderSelf();
-    // renderFamily / renderWishes はTask 6-7で追加
-    if (typeof renderFamily === 'function') renderFamily();
-    if (typeof renderWishes === 'function') renderWishes();
+    renderFamily();
+    renderWishes();
   }
 
   // --- 起動 ---
