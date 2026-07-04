@@ -234,6 +234,7 @@
 
   // --- 設定・バックアップ ---
   $('open-settings').addEventListener('click', () => {
+    if (!data || !data.self) return;
     $('set-birth').value = data.self.birthDate;
     $('set-gender').value = data.self.gender;
     $('set-lifespan').value = data.self.customLifespan || '';
@@ -277,15 +278,18 @@
   }
   $('export-json').addEventListener('click', downloadJSON);
 
-  function readImportFile(file, onOk) {
+  function readImportFile(file, onOk, resultId = 'import-result') {
     const reader = new FileReader();
     reader.onload = () => {
       const r = LifeStore.importJSON(String(reader.result));
       if (!r.ok) {
-        $('import-result').textContent = '読み込めませんでした: ' + r.error;
+        $(resultId).textContent = '読み込めませんでした: ' + r.error;
         return;
       }
       onOk(r.data);
+    };
+    reader.onerror = () => {
+      $(resultId).textContent = '読み込めませんでした: ファイル読み取りエラー';
     };
     reader.readAsText(file);
   }
@@ -299,6 +303,7 @@
       $('settings').hidden = true;
       persist();
     });
+    e.target.value = '';
   });
 
   // --- 破損復旧(init内のcorrupt分岐から使う) ---
@@ -308,7 +313,8 @@
       data = d;
       LifeStore.save(localStorage, data);
       location.reload();
-    });
+    }, 'restore-result');
+    e.target.value = '';
   });
 
   $('reset-data').addEventListener('click', () => {
