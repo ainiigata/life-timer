@@ -41,3 +41,16 @@ test('主要モジュールが同梱されている', () => {
   assert.ok(html.includes('TimeCalc'));
   assert.ok(html.includes('LifeStore'));
 });
+
+test('PWAファイルがdistにコピーされている', () => {
+  for (const f of ['manifest.json', 'sw.js', 'icon.svg', 'icon-maskable.svg']) {
+    assert.ok(fs.existsSync(path.join(root, 'dist', f)), f + ' がない');
+  }
+});
+
+test('manifestが相対パス構成', () => {
+  const m = JSON.parse(fs.readFileSync(path.join(root, 'dist', 'manifest.json'), 'utf-8'));
+  assert.equal(m.start_url, './?pwa=1');
+  assert.equal(m.scope, './');
+  assert.equal(m.display, 'standalone');
+});

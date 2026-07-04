@@ -349,5 +349,11 @@
   }
 
   window.LifeApp = { get data() { return data; }, render, formatBreakdown };
+
+  // PWA: file:直開き配布でも動くようhttp(s)時のみ登録
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
+
   init();
 })();
