@@ -217,6 +217,7 @@
     const id = e.target.dataset && e.target.dataset.wish;
     if (!id) return;
     const w = data.wishes.find((x) => x.id === id);
+    if (!w) return;
     w.done = e.target.checked;
     w.doneAt = w.done ? new Date().toISOString().slice(0, 10) : null;
     if (w.done) celebrate();
