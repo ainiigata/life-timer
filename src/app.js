@@ -97,6 +97,7 @@
     const id = e.target.dataset && e.target.dataset.edit;
     if (!id) return;
     const f = data.family.find((x) => x.id === id);
+    if (!f) return;
     editingFamilyId = id;
     $('family-dialog-title').textContent = '家族を編集';
     $('fam-name').value = f.name;
@@ -115,7 +116,8 @@
     $('family-dialog').showModal();
   });
 
-  $('family-form').addEventListener('submit', () => {
+  $('family-form').addEventListener('submit', (e) => {
+    e.preventDefault();
     const birthDate = $('fam-birth').value;
     if (!LifeStore.isValidDateStr(birthDate)) {
       alert('誕生日が不正です');
@@ -135,6 +137,7 @@
       data.family.push(rec);
     }
     persist();
+    $('family-dialog').close();
   });
 
   $('fam-delete').addEventListener('click', () => {
