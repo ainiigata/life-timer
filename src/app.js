@@ -232,6 +232,91 @@
     persist();
   });
 
+  // --- 設定・バックアップ ---
+  $('open-settings').addEventListener('click', () => {
+    $('set-birth').value = data.self.birthDate;
+    $('set-gender').value = data.self.gender;
+    $('set-lifespan').value = data.self.customLifespan || '';
+    $('self-timer').hidden = true;
+    $('settings').hidden = false;
+  });
+
+  $('close-settings').addEventListener('click', () => {
+    $('settings').hidden = true;
+    $('self-timer').hidden = false;
+  });
+
+  $('settings-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const birthDate = $('set-birth').value;
+    if (!LifeStore.isValidDateStr(birthDate)) {
+      alert('誕生日が不正です');
+      return;
+    }
+    const span = $('set-lifespan').value;
+    data.self = {
+      name: data.self.name || '',
+      birthDate,
+      gender: $('set-gender').value,
+      customLifespan: span ? Number(span) : null,
+    };
+    $('settings').hidden = true;
+    persist();
+  });
+
+  function downloadJSON() {
+    const blob = new Blob([LifeStore.exportJSON(data)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `life-timer-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+  $('export-json').addEventListener('click', downloadJSON);
+
+  function readImportFile(file, onOk) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const r = LifeStore.importJSON(String(reader.result));
+      if (!r.ok) {
+        $('import-result').textContent = '読み込めませんでした: ' + r.error;
+        return;
+      }
+      onOk(r.data);
+    };
+    reader.readAsText(file);
+  }
+
+  $('import-json').addEventListener('change', (e) => {
+    if (!e.target.files[0]) return;
+    if (!confirm('現在のデータを読み込んだ内容で置き換えます。よろしいですか?')) return;
+    readImportFile(e.target.files[0], (d) => {
+      data = d;
+      $('import-result').textContent = '読み込みました';
+      $('settings').hidden = true;
+      persist();
+    });
+  });
+
+  // --- 破損復旧(init内のcorrupt分岐から使う) ---
+  $('restore-json').addEventListener('change', (e) => {
+    if (!e.target.files[0]) return;
+    readImportFile(e.target.files[0], (d) => {
+      data = d;
+      LifeStore.save(localStorage, data);
+      location.reload();
+    });
+  });
+
+  $('reset-data').addEventListener('click', () => {
+    if (!confirm('保存データを消して最初からやり直します。よろしいですか?')) return;
+    LifeStore.save(localStorage, LifeStore.emptyData());
+    location.reload();
+  });
+
   // --- 毎秒更新 ---
   function tick() {
     if (data && data.self) renderSelf();
