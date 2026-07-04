@@ -63,6 +63,89 @@
     persist();
   });
 
+  // --- 家族画面 ---
+  const FREQ_LABEL = {
+    daily: '毎日会うなら', weekly: '週1で会うなら', monthly: '月1で会うなら',
+    'yearly-2': '年2回会うなら', 'yearly-1': '年1回会うなら',
+  };
+  let editingFamilyId = null;
+
+  function renderFamily() {
+    const list = $('family-list');
+    list.textContent = '';
+    $('family-empty').hidden = data.family.length > 0;
+    const now = new Date();
+    for (const f of data.family) {
+      const death = deathDates.family.get(f.id);
+      const b = TimeCalc.breakdown(now, death);
+      const li = document.createElement('li');
+      li.className = 'family-card';
+      const meets = data.self && deathDates.self
+        ? TimeCalc.meetCount(deathDates.self, death, f.meetFrequency, now)
+        : null;
+      li.innerHTML = `
+        <div class="family-head"><strong></strong><button class="ghost-btn" data-edit="${f.id}">編集</button></div>
+        <p class="family-remain">残り ${b.expired ? '—' : `${b.years}年${b.months}ヶ月`}</p>
+        <p class="family-meets">${meets === null ? 'わたしの誕生日を設定すると回数が出ます'
+          : `${FREQ_LABEL[f.meetFrequency] || '会うなら'} <strong class="meets-num">あと${meets}回</strong>`}</p>`;
+      li.querySelector('strong').textContent = f.name; // XSS防止のためtextContentで注入
+      list.appendChild(li);
+    }
+  }
+
+  $('family-list').addEventListener('click', (e) => {
+    const id = e.target.dataset && e.target.dataset.edit;
+    if (!id) return;
+    const f = data.family.find((x) => x.id === id);
+    editingFamilyId = id;
+    $('family-dialog-title').textContent = '家族を編集';
+    $('fam-name').value = f.name;
+    $('fam-birth').value = f.birthDate;
+    $('fam-gender').value = f.gender;
+    $('fam-freq').value = f.meetFrequency;
+    $('fam-delete').hidden = false;
+    $('family-dialog').showModal();
+  });
+
+  $('add-family').addEventListener('click', () => {
+    editingFamilyId = null;
+    $('family-dialog-title').textContent = '家族を追加';
+    $('family-form').reset();
+    $('fam-delete').hidden = true;
+    $('family-dialog').showModal();
+  });
+
+  $('family-form').addEventListener('submit', () => {
+    const birthDate = $('fam-birth').value;
+    if (!LifeStore.isValidDateStr(birthDate)) {
+      alert('誕生日が不正です');
+      return;
+    }
+    const rec = {
+      id: editingFamilyId || LifeStore.newId(),
+      name: $('fam-name').value.trim(),
+      birthDate,
+      gender: $('fam-gender').value,
+      customLifespan: null,
+      meetFrequency: $('fam-freq').value,
+    };
+    if (editingFamilyId) {
+      data.family = data.family.map((f) => (f.id === editingFamilyId ? rec : f));
+    } else {
+      data.family.push(rec);
+    }
+    persist();
+  });
+
+  $('fam-delete').addEventListener('click', () => {
+    if (!confirm('この家族を削除しますか?')) return;
+    data.family = data.family.filter((f) => f.id !== editingFamilyId);
+    $('family-dialog').close();
+    persist();
+  });
+
+  $('fam-cancel').addEventListener('click', () => $('family-dialog').close());
+
   // --- 毎秒更新 ---
   function tick() {
     if (data && data.self) renderSelf();
