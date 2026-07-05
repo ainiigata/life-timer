@@ -59,3 +59,13 @@ test('manifestが相対パス構成', () => {
   assert.equal(m.scope, './');
   assert.equal(m.display, 'standalone');
 });
+
+test('sw.jsのキャッシュ名にビルドハッシュが刻印されている', () => {
+  const sw = fs.readFileSync(path.join(root, 'dist', 'sw.js'), 'utf-8');
+  assert.ok(!sw.includes('__BUILD__'));
+  assert.match(sw, /const CACHE = 'life-timer-[0-9a-f]{8}'/);
+});
+
+test('CSPがselfの画像(PWAアイコン)を許可している', () => {
+  assert.ok(html.includes("img-src data: 'self'"));
+});

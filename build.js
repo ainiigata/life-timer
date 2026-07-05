@@ -1,6 +1,7 @@
 /* 人生タイマー ビルド — src/を単一HTML dist/index.html にインライン化し、static/をコピーする */
 const fs = require('node:fs');
 const path = require('node:path');
+const crypto = require('node:crypto');
 
 const root = __dirname;
 const read = (p) => fs.readFileSync(path.join(root, p), 'utf-8');
@@ -31,9 +32,17 @@ const dist = path.join(root, 'dist');
 fs.mkdirSync(dist, { recursive: true });
 fs.writeFileSync(path.join(dist, 'index.html'), html);
 
+// sw.jsのキャッシュ名にコンテンツハッシュを刻印(デプロイごとに旧キャッシュを破棄させる)
+const buildHash = crypto.createHash('sha1').update(html).digest('hex').slice(0, 8);
+
 const staticDir = path.join(root, 'static');
 for (const f of fs.readdirSync(staticDir)) {
   if (f.startsWith('.')) continue;
+  if (f === 'sw.js') {
+    const sw = read('static/sw.js').replaceAll('__BUILD__', buildHash);
+    fs.writeFileSync(path.join(dist, 'sw.js'), sw);
+    continue;
+  }
   fs.copyFileSync(path.join(staticDir, f), path.join(dist, f));
 }
 console.log(`ビルド完了: dist/index.html (${(html.length / 1024).toFixed(0)} KB)`);

@@ -1049,3 +1049,28 @@ dialog::backdrop {
     border-color: var(--orange-light);
   }
 }
+
+/* ── QA修正: レイアウトの細部 ────────────────────── */
+
+/* カウントダウンの時刻部(HH:MM:SS)は途中で折り返さない(日付部との間でのみ折り返す) */
+.countdown-time {
+  white-space: nowrap;
+}
+
+/* wish行: ラベルが幅を取り、タイトルが数文字で潰れないようにする */
+.wish-item label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.wish-title {
+  overflow-wrap: anywhere;
+}
+
+/* 期限未設定のwishで空のタグ残骸を出さない */
+.wish-remain:empty {
+  display: none;
+}

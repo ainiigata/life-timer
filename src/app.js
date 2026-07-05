@@ -49,7 +49,21 @@
     if (!has) return;
     const now = new Date();
     const b = TimeCalc.breakdown(now, deathDates.self);
-    $('countdown').textContent = formatBreakdown(b);
+    const c = $('countdown');
+    if (b.expired) {
+      c.textContent = formatBreakdown(b);
+    } else {
+      // 時刻部(HH:MM:SS)の途中で折り返されないよう、日付部と時刻部を別spanにする
+      const pad = (n) => String(n).padStart(2, '0');
+      c.textContent = '';
+      const dateSpan = document.createElement('span');
+      dateSpan.className = 'countdown-date';
+      dateSpan.textContent = `${b.years}年 ${b.months}ヶ月 ${b.days}日 `;
+      const timeSpan = document.createElement('span');
+      timeSpan.className = 'countdown-time';
+      timeSpan.textContent = `${pad(b.hours)}:${pad(b.minutes)}:${pad(b.seconds)}`;
+      c.append(dateSpan, timeSpan);
+    }
     const pct = TimeCalc.progressPercent(data.self.birthDate, deathDates.self, now);
     $('progress-bar').style.width = pct.toFixed(2) + '%';
     $('progress-text').textContent = `人生の ${pct.toFixed(1)}% を生きました`;
