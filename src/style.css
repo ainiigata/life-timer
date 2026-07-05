@@ -1057,20 +1057,43 @@ dialog::backdrop {
   white-space: nowrap;
 }
 
-/* wish行: ラベルが幅を取り、タイトルが数文字で潰れないようにする */
+/* wish行: 1行目=チェック+タイトル+削除、2行目=期限タグ(タイトルを潰さない)
+   ※ 既存の #wish-list li (flex) より詳細度を上げるためIDを付ける */
+#wish-list li.wish-item,
+#wish-done-list li.wish-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  row-gap: 6px;
+}
+
 .wish-item label {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex: 1;
   min-width: 0;
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.wish-item > button {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
 }
 
 .wish-title {
   overflow-wrap: anywhere;
 }
 
-/* 期限未設定のwishで空のタグ残骸を出さない */
+.wish-item .wish-remain {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-self: start;
+  margin-left: 32px; /* チェックボックス分のインデント */
+}
+
+/* 期限未設定のwishで空のタグ残骸を出さない(行ごと畳む) */
 .wish-remain:empty {
   display: none;
 }
