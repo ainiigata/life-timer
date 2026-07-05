@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: 'self'; manifest-src 'self'; worker-src 'self';">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ff8a3d">
+<meta name="description" content="平均余命から残り時間を秒単位でカウントダウン。家族と「あと何回会えるか」、やりたいことリストで今日を大切にするアプリ。データはすべて端末内に保存され、外部送信はありません。">
+<meta property="og:title" content="人生タイマー — 残り時間を、夢の時間に">
+<meta property="og:description" content="平均余命から残り時間を秒単位でカウントダウン。家族と「あと何回会えるか」、やりたいことリストで今日を大切にする。">
+<meta property="og:type" content="website">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="manifest" href="./manifest.json">
+<title>人生タイマー — 残り時間を、夢の時間に</title>
+<!--
+  人生タイマー / 残り時間の可視化で「今やる」を引き出すアプリ
+  データはすべて端末内(localStorage)に保存され、外部送信は一切ありません
+  出典: 「令和5年簡易生命表」(厚生労働省)を加工して作成
+-->
+<style>
+/*<!--INJECT:STYLE-->*/
+</style>
+</head>
+<body>
+<main id="app">
+  <!-- わたし -->
+  <section id="screen-self" class="screen active">
+    <div id="onboarding" hidden>
+      <h1>人生タイマー</h1>
+      <p>誕生日を入れると、残り時間が動き出します。<br>データはこの端末の中だけに保存されます。</p>
+      <form id="onboarding-form">
+        <label>誕生日 <input type="date" id="ob-birth" required></label>
+        <label>性別(余命計算に使います)
+          <select id="ob-gender" required>
+            <option value="">選択してください</option>
+            <option value="male">男性</option>
+            <option value="female">女性</option>
+          </select>
+        </label>
+        <button type="submit">はじめる</button>
+      </form>
+    </div>
+    <div id="self-timer" hidden>
+      <p class="timer-label">あなたの残り時間</p>
+      <div id="countdown" class="countdown" aria-live="off"></div>
+      <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
+      <p id="progress-text"></p>
+      <p id="today-message" class="message">今日をどう使う?</p>
+      <button id="open-settings" class="ghost-btn">設定</button>
+    </div>
+    <div id="settings" hidden>
+      <h2>設定</h2>
+      <form id="settings-form">
+        <label>誕生日 <input type="date" id="set-birth" required></label>
+        <label>性別
+          <select id="set-gender" required>
+            <option value="male">男性</option>
+            <option value="female">女性</option>
+          </select>
+        </label>
+        <label>目標寿命(任意。「100歳まで生きる」なら100)
+          <input type="number" id="set-lifespan" min="1" max="150" placeholder="未設定なら統計値">
+        </label>
+        <button type="submit">保存</button>
+        <button type="button" id="close-settings" class="ghost-btn">閉じる</button>
+      </form>
+      <h3>バックアップ</h3>
+      <button id="export-json">JSONで書き出す</button>
+      <label class="file-btn">JSONを読み込む<input type="file" id="import-json" accept=".json,application/json" hidden></label>
+      <p id="import-result" role="status"></p>
+    </div>
+    <div id="corrupt-notice" hidden>
+      <h2>データを読み込めませんでした</h2>
+      <p>保存データが壊れています。バックアップJSONから復元するか、リセットしてください。</p>
+      <label class="file-btn">バックアップから復元<input type="file" id="restore-json" accept=".json,application/json" hidden></label>
+      <p id="restore-result" role="status"></p>
+      <button id="reset-data" class="danger-btn">リセットして最初から</button>
+    </div>
+  </section>
+  <!-- 家族 -->
+  <section id="screen-family" class="screen">
+    <h1>家族</h1>
+    <ul id="family-list"></ul>
+    <p id="family-empty" hidden>家族を追加すると「あと何回会えるか」がわかります。</p>
+    <button id="add-family">+ 家族を追加</button>
+    <dialog id="family-dialog">
+      <form id="family-form">
+        <h2 id="family-dialog-title">家族を追加</h2>
+        <label>名前 <input type="text" id="fam-name" required maxlength="20"></label>
+        <label>誕生日 <input type="date" id="fam-birth" required></label>
+        <label>性別
+          <select id="fam-gender" required>
+            <option value="male">男性</option>
+            <option value="female">女性</option>
+          </select>
+        </label>
+        <label>会う頻度
+          <select id="fam-freq">
+            <option value="daily">毎日</option>
+            <option value="weekly">週に1回</option>
+            <option value="monthly" selected>月に1回</option>
+            <option value="yearly-2">年に2回</option>
+            <option value="yearly-1">年に1回</option>
+          </select>
+        </label>
+        <button type="submit" id="fam-save">保存</button>
+        <button type="button" id="fam-delete" class="danger-btn" hidden>削除</button>
+        <button type="button" id="fam-cancel" class="ghost-btn">キャンセル</button>
+      </form>
+    </dialog>
+  </section>
+  <!-- やりたいこと -->
+  <section id="screen-wishes" class="screen">
+    <h1>やりたいこと</h1>
+    <form id="wish-form">
+      <input type="text" id="wish-title" placeholder="例: 家族で沖縄に行く" required maxlength="50">
+      <input type="number" id="wish-age" min="1" max="150" placeholder="◯歳までに(任意)">
+      <button type="submit">追加</button>
+    </form>
+    <ul id="wish-list"></ul>
+    <p id="wish-empty" hidden>最初のやりたいことを書いてみましょう。</p>
+    <h2 class="done-heading">叶えた夢 <span id="done-count"></span></h2>
+    <ul id="wish-done-list"></ul>
+  </section>
+</main>
+<nav class="tab-bar">
+  <button class="tab-btn active" data-tab="self">わたし</button>
+  <button class="tab-btn" data-tab="family">家族</button>
+  <button class="tab-btn" data-tab="wishes">やりたいこと</button>
+</nav>
+<div id="celebrate" hidden aria-hidden="true"></div>
+<footer class="source-note">出典:「令和5年簡易生命表」(厚生労働省)を加工して作成。余命は統計上の平均であり、個人の寿命を予測するものではありません。</footer>
+<script>/*<!--INJECT:LIFE_TABLE-->*/</script>
+<script>/*<!--INJECT:TIME_CALC-->*/</script>
+<script>/*<!--INJECT:STORE-->*/</script>
+<script>/*<!--INJECT:APP-->*/</script>
+</body>
+</html>
