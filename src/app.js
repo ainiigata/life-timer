@@ -10,6 +10,34 @@
   let selfView = 'timer'; // 'timer' | 'settings'
   let celebrateTimer = null;
 
+  // --- 格言バナー ---
+  let quoteOrder = [];
+  let quotePos = 0;
+  function shuffleQuotes() {
+    quoteOrder = Quotes.LIST.map((_, i) => i);
+    for (let i = quoteOrder.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [quoteOrder[i], quoteOrder[j]] = [quoteOrder[j], quoteOrder[i]];
+    }
+    quotePos = 0;
+  }
+  function showQuote() {
+    if (quoteOrder.length === 0) shuffleQuotes();
+    const q = Quotes.LIST[quoteOrder[quotePos]];
+    $('quote-text').textContent = '「' + q.text + '」';
+    $('quote-author').textContent = '— ' + q.author;
+    const banner = $('quote-banner');
+    banner.style.animation = 'none';
+    void banner.offsetWidth; // reflow で再アニメーション
+    banner.style.animation = '';
+  }
+  function nextQuote() {
+    quotePos++;
+    if (quotePos >= quoteOrder.length) shuffleQuotes();
+    showQuote();
+  }
+  $('quote-banner').addEventListener('click', nextQuote);
+
   function recomputeDeathDates() {
     const now = new Date();
     deathDates.self = data.self ? TimeCalc.expectedDeathDate(data.self, now) : null;
@@ -355,6 +383,8 @@
 
   // --- 起動 ---
   function init() {
+    shuffleQuotes();
+    showQuote();
     const r = LifeStore.load(localStorage);
     if (r.corrupt) {
       $('corrupt-notice').hidden = false;

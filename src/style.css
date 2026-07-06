@@ -1097,3 +1097,61 @@ dialog::backdrop {
 .wish-remain:empty {
   display: none;
 }
+
+/* ============================================================
+   格言バナー(わたし画面上部・引用調)
+   ============================================================ */
+.quote-banner {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: linear-gradient(135deg, var(--orange-pale) 0%, var(--cream-dark) 100%);
+  border: none;
+  border-left: 3px solid var(--orange);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px 14px;
+  margin-bottom: 22px;
+  cursor: pointer;
+  font-family: var(--font-serif);
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--transition), box-shadow var(--transition);
+  animation: quoteFade 0.5s ease both;
+}
+.quote-banner::before {
+  content: '“';
+  position: absolute;
+  top: -8px;
+  right: 10px;
+  font-family: Georgia, serif;
+  font-size: 4.5rem;
+  line-height: 1;
+  color: var(--orange-light);
+  opacity: 0.35;
+  pointer-events: none;
+}
+.quote-text {
+  display: block;
+  font-size: 0.98rem;
+  line-height: 1.7;
+  color: var(--brown);
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+}
+.quote-author {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: var(--brown-light);
+  text-align: right;
+  font-family: var(--font-sans);
+}
+@keyframes quoteFade {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (hover: hover) {
+  .quote-banner:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+}
+.quote-banner:active { transform: scale(0.99); }
