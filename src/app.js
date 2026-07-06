@@ -59,6 +59,7 @@
       document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
       $('screen-' + btn.dataset.tab).classList.add('active');
       btn.classList.add('active');
+      tick(); // 切替先の画面(わたし/見つめる)を即座に最新表示にする
     });
   });
 
@@ -369,12 +370,21 @@
       alert('誕生日が不正です');
       return;
     }
-    const span = $('set-lifespan').value;
+    const span = $('set-lifespan').value.trim();
+    let customLifespan = null;
+    if (span) {
+      const n = Number(span);
+      if (!Number.isFinite(n) || n < 1 || n > 150) {
+        alert('目標寿命は1〜150の数字で入力してください(未設定なら空欄)');
+        return;
+      }
+      customLifespan = n;
+    }
     data.self = {
       name: data.self.name || '',
       birthDate,
       gender: $('set-gender').value,
-      customLifespan: span ? Number(span) : null,
+      customLifespan,
     };
     selfView = 'timer';
     persist();

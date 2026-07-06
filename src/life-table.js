@@ -38,35 +38,29 @@
     },
   };
 
-  const AGES = Object.keys(LIFE_TABLE.male).map(Number).sort((a, b) => a - b);
-  const MAX_AGE = AGES[AGES.length - 1];
-
-  function remainingYears(gender, age) {
-    const t = LIFE_TABLE[gender];
+  // 年齢別テーブルを線形補間して引く。掲載年齢はそのまま、上限超は最終値、負は0歳値。
+  // ages はテーブルごとに導出する(テーブルの刻みが違っても正しく動く)
+  function interpolate(table, gender, age) {
+    const t = table[gender];
     if (!t) throw new Error('unknown gender: ' + gender);
-    if (age <= 0) return t[0];
-    if (age >= MAX_AGE) return t[MAX_AGE];
-    let lo = AGES[0];
-    for (const a of AGES) {
-      if (a <= age) lo = a; else break;
+    const ages = Object.keys(t).map(Number).sort((a, b) => a - b);
+    const maxAge = ages[ages.length - 1];
+    if (age <= 0) return t[ages[0]];
+    if (age >= maxAge) return t[maxAge];
+    let lo = ages[0], hi = ages[1];
+    for (let i = 0; i < ages.length - 1; i++) {
+      if (ages[i] <= age) { lo = ages[i]; hi = ages[i + 1]; } else break;
     }
-    const hi = AGES[AGES.indexOf(lo) + 1];
     const ratio = (age - lo) / (hi - lo);
     return t[lo] + (t[hi] - t[lo]) * ratio;
   }
 
+  function remainingYears(gender, age) {
+    return interpolate(LIFE_TABLE, gender, age);
+  }
+
   function annualMortality(gender, age) {
-    const t = MORTALITY[gender];
-    if (!t) throw new Error('unknown gender: ' + gender);
-    if (age <= 0) return t[0];
-    if (age >= MAX_AGE) return t[MAX_AGE];
-    let lo = AGES[0];
-    for (const a of AGES) {
-      if (a <= age) lo = a; else break;
-    }
-    const hi = AGES[AGES.indexOf(lo) + 1];
-    const ratio = (age - lo) / (hi - lo);
-    return t[lo] + (t[hi] - t[lo]) * ratio;
+    return interpolate(MORTALITY, gender, age);
   }
 
   return { LIFE_TABLE, MORTALITY, remainingYears, annualMortality };

@@ -1268,11 +1268,11 @@ dialog::backdrop {
   margin-bottom: 8px;
   font-family: var(--font-sans);
 }
-.today-check {
-  display: flex !important;
+.today-declaration .today-check {
+  display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 0 !important;
+  margin-bottom: 0;
   cursor: pointer;
 }
 .today-check input[type="checkbox"] {
