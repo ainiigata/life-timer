@@ -108,6 +108,33 @@
     persist();
   });
 
+  // --- 見つめる画面 ---
+  function renderInsight() {
+    const has = !!data.self;
+    $('insight-empty').hidden = has;
+    const wrap = $('insight-cards');
+    if (!has) { wrap.textContent = ''; return; }
+    const cards = Insight.build(data.self, deathDates.self, new Date());
+    // 毎秒呼ばれるので、枚数が同じなら要素を作り直さず value/sub だけ更新
+    if (wrap.childElementCount !== cards.length) {
+      wrap.textContent = '';
+      for (const c of cards) {
+        const el = document.createElement('div');
+        el.className = 'insight-card';
+        el.dataset.id = c.id;
+        el.innerHTML = '<p class="insight-label"></p><p class="insight-value"></p><p class="insight-sub"></p>';
+        wrap.appendChild(el);
+      }
+    }
+    const els = wrap.children;
+    cards.forEach((c, i) => {
+      const el = els[i];
+      el.querySelector('.insight-label').textContent = c.label;
+      el.querySelector('.insight-value').textContent = c.value;
+      el.querySelector('.insight-sub').textContent = c.sub;
+    });
+  }
+
   // --- 家族画面 ---
   const FREQ_LABEL = {
     daily: '毎日会うなら', weekly: '週1で会うなら', monthly: '月1で会うなら',
@@ -372,11 +399,14 @@
 
   // --- 毎秒更新 ---
   function tick() {
-    if (data && data.self) renderSelf();
+    if (!data || !data.self) return;
+    if ($('screen-self').classList.contains('active')) renderSelf();
+    if ($('screen-insight').classList.contains('active')) renderInsight();
   }
 
   function render() {
     renderSelf();
+    renderInsight();
     renderFamily();
     renderWishes();
   }

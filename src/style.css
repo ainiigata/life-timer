@@ -1155,3 +1155,57 @@ dialog::backdrop {
   .quote-banner:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
 }
 .quote-banner:active { transform: scale(0.99); }
+
+/* ============================================================
+   見つめるタブ(残り時間を多角的に見せるカード集)
+   ============================================================ */
+#insight-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+}
+.insight-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1.5px solid var(--warm-gray-lt);
+  padding: 16px 18px;
+  animation: cardIn 0.22s ease both;
+}
+.insight-label {
+  font-size: 0.8rem;
+  color: var(--brown-light);
+  font-family: var(--font-sans);
+  margin-bottom: 6px;
+}
+.insight-value {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--brown);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.insight-sub {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--warm-gray);
+  font-family: var(--font-sans);
+}
+/* 明日死ぬ確率カードだけ、少し際立たせる */
+.insight-card[data-id="death-prob"] {
+  background: linear-gradient(135deg, var(--orange-pale) 0%, var(--white) 60%);
+  border-color: var(--orange-light);
+}
+.insight-card[data-id="death-prob"] .insight-value { color: var(--orange-dark); }
+.insight-card[data-id="death-prob"] .insight-sub { color: var(--brown-mid); }
+.insight-note {
+  margin: 18px 4px 4px;
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: var(--warm-gray);
+  text-align: center;
+}

@@ -81,6 +81,13 @@
       <button id="reset-data" class="danger-btn">リセットして最初から</button>
     </div>
   </section>
+  <!-- 見つめる -->
+  <section id="screen-insight" class="screen">
+    <h1>見つめる</h1>
+    <p id="insight-empty" hidden>まず「わたし」で誕生日を設定してください。</p>
+    <div id="insight-cards"></div>
+    <p class="insight-note">呼吸・鼓動・確率は、統計からのおおよその目安です。医療情報ではありません。</p>
+  </section>
   <!-- 家族 -->
   <section id="screen-family" class="screen">
     <h1>家族</h1>
@@ -129,6 +136,7 @@
 </main>
 <nav class="tab-bar">
   <button class="tab-btn active" data-tab="self">わたし</button>
+  <button class="tab-btn" data-tab="insight">見つめる</button>
   <button class="tab-btn" data-tab="family">家族</button>
   <button class="tab-btn" data-tab="wishes">やりたいこと</button>
 </nav>
