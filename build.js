@@ -14,6 +14,8 @@ const INJECTIONS = {
   STYLE: escapeStyle(read('src/style.css')),
   LIFE_TABLE: escapeScript(read('src/life-table.js')),
   TIME_CALC: escapeScript(read('src/time-calc.js')),
+  QUOTES: escapeScript(read('src/quotes.js')),
+  INSIGHT: escapeScript(read('src/insight.js')),
   STORE: escapeScript(read('src/store.js')),
   APP: escapeScript(read('src/app.js')),
 };

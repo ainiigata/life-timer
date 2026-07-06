@@ -25,6 +25,10 @@
 <main id="app">
   <!-- わたし -->
   <section id="screen-self" class="screen active">
+    <button id="quote-banner" class="quote-banner" type="button" aria-label="次の言葉を見る">
+      <span id="quote-text" class="quote-text"></span>
+      <span id="quote-author" class="quote-author"></span>
+    </button>
     <div id="onboarding" hidden>
       <h1>人生タイマー</h1>
       <p>誕生日を入れると、残り時間が動き出します。<br>データはこの端末の中だけに保存されます。</p>
@@ -46,6 +50,20 @@
       <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
       <p id="progress-text"></p>
       <p id="today-message" class="message">今日をどう使う?</p>
+      <div id="today-declaration" class="today-declaration">
+        <form id="today-form">
+          <label for="today-input">今日やることを1つ</label>
+          <div class="today-row">
+            <input type="text" id="today-input" maxlength="60" placeholder="例: 履歴書を書く">
+            <button type="submit">決める</button>
+          </div>
+        </form>
+        <div id="today-set" hidden>
+          <p class="today-set-label">今日の宣言</p>
+          <label class="today-check"><input type="checkbox" id="today-done"> <span id="today-text"></span></label>
+          <button type="button" id="today-clear" class="ghost-btn">変更する</button>
+        </div>
+      </div>
       <button id="open-settings" class="ghost-btn">設定</button>
     </div>
     <div id="settings" hidden>
@@ -76,6 +94,13 @@
       <p id="restore-result" role="status"></p>
       <button id="reset-data" class="danger-btn">リセットして最初から</button>
     </div>
+  </section>
+  <!-- 見つめる -->
+  <section id="screen-insight" class="screen">
+    <h1>見つめる</h1>
+    <p id="insight-empty" hidden>まず「わたし」で誕生日を設定してください。</p>
+    <div id="insight-cards"></div>
+    <p class="insight-note">呼吸・鼓動・確率は、統計からのおおよその目安です。医療情報ではありません。</p>
   </section>
   <!-- 家族 -->
   <section id="screen-family" class="screen">
@@ -125,6 +150,7 @@
 </main>
 <nav class="tab-bar">
   <button class="tab-btn active" data-tab="self">わたし</button>
+  <button class="tab-btn" data-tab="insight">見つめる</button>
   <button class="tab-btn" data-tab="family">家族</button>
   <button class="tab-btn" data-tab="wishes">やりたいこと</button>
 </nav>
@@ -132,6 +158,8 @@
 <footer class="source-note">出典:「令和5年簡易生命表」(厚生労働省)を加工して作成。余命は統計上の平均であり、個人の寿命を予測するものではありません。</footer>
 <script>/*<!--INJECT:LIFE_TABLE-->*/</script>
 <script>/*<!--INJECT:TIME_CALC-->*/</script>
+<script>/*<!--INJECT:QUOTES-->*/</script>
+<script>/*<!--INJECT:INSIGHT-->*/</script>
 <script>/*<!--INJECT:STORE-->*/</script>
 <script>/*<!--INJECT:APP-->*/</script>
 </body>

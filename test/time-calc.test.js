@@ -86,3 +86,43 @@ test('meetCount: 残りゼロ以下は0回', () => {
   const now = new Date(2026, 0, 1);
   assert.equal(TimeCalc.meetCount(new Date(2025, 0, 1), new Date(2066, 0, 1), 'daily', now), 0);
 });
+
+test('remainingSeconds: 期限までの秒(期限切れは0)', () => {
+  const now = new Date(2026, 0, 1, 0, 0, 0);
+  assert.equal(TimeCalc.remainingSeconds(now, new Date(2026, 0, 1, 0, 0, 10)), 10);
+  assert.equal(TimeCalc.remainingSeconds(now, new Date(2025, 0, 1)), 0);
+});
+
+test('countByRatePerMinute: 呼吸16/分・鼓動70/分', () => {
+  assert.equal(TimeCalc.countByRatePerMinute(60, 16), 16);
+  assert.equal(TimeCalc.countByRatePerMinute(60, 70), 70);
+  assert.equal(TimeCalc.countByRatePerMinute(90, 16), 24);
+});
+
+test('occurrencesUntil: 残り年×頻度(切り捨て)', () => {
+  const now = new Date(2026, 0, 1);
+  const death = new Date(2036, 0, 1);
+  const n = TimeCalc.occurrencesUntil(now, death, 1);
+  assert.ok(n === 9 || n === 10, `got ${n}`);
+  assert.equal(TimeCalc.occurrencesUntil(now, new Date(2025, 0, 1), 1), 0);
+});
+
+test('daysLived: 生きた日数(うるう跨ぎ)', () => {
+  const now = new Date(2026, 0, 1);
+  assert.equal(TimeCalc.daysLived('2025-01-01', now), 365);
+  assert.equal(TimeCalc.daysLived('2024-01-01', now), 731);
+  assert.equal(TimeCalc.daysLived('2027-01-01', now), 0);
+});
+
+test('dailyDeathProbability: qxからの日次確率', () => {
+  const p = TimeCalc.dailyDeathProbability(0.00102);
+  assert.ok(p > 0 && p < 0.00102, `got ${p}`);
+  assert.ok(Math.abs(p - (1 - Math.pow(1 - 0.00102, 1 / 365))) < 1e-15);
+});
+
+test('awakeRemainingToday: 就寝前は残りあり・就寝後は0', () => {
+  const before = TimeCalc.awakeRemainingToday(new Date(2026, 0, 1, 21, 0, 0), 23);
+  assert.deepEqual(before, { hours: 2, minutes: 0 });
+  const after = TimeCalc.awakeRemainingToday(new Date(2026, 0, 1, 23, 30, 0), 23);
+  assert.deepEqual(after, { hours: 0, minutes: 0 });
+});

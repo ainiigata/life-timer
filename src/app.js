@@ -10,6 +10,34 @@
   let selfView = 'timer'; // 'timer' | 'settings'
   let celebrateTimer = null;
 
+  // --- 格言バナー ---
+  let quoteOrder = [];
+  let quotePos = 0;
+  function shuffleQuotes() {
+    quoteOrder = Quotes.LIST.map((_, i) => i);
+    for (let i = quoteOrder.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [quoteOrder[i], quoteOrder[j]] = [quoteOrder[j], quoteOrder[i]];
+    }
+    quotePos = 0;
+  }
+  function showQuote() {
+    if (quoteOrder.length === 0) shuffleQuotes();
+    const q = Quotes.LIST[quoteOrder[quotePos]];
+    $('quote-text').textContent = '「' + q.text + '」';
+    $('quote-author').textContent = '— ' + q.author;
+    const banner = $('quote-banner');
+    banner.style.animation = 'none';
+    void banner.offsetWidth; // reflow で再アニメーション
+    banner.style.animation = '';
+  }
+  function nextQuote() {
+    quotePos++;
+    if (quotePos >= quoteOrder.length) shuffleQuotes();
+    showQuote();
+  }
+  $('quote-banner').addEventListener('click', nextQuote);
+
   function recomputeDeathDates() {
     const now = new Date();
     deathDates.self = data.self ? TimeCalc.expectedDeathDate(data.self, now) : null;
@@ -31,6 +59,7 @@
       document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
       $('screen-' + btn.dataset.tab).classList.add('active');
       btn.classList.add('active');
+      tick(); // 切替先の画面(わたし/見つめる)を即座に最新表示にする
     });
   });
 
@@ -79,6 +108,74 @@
     data.self = { name: '', birthDate, gender: $('ob-gender').value, customLifespan: null };
     persist();
   });
+
+  // --- 今日の宣言 ---
+  function todayStr(now) {
+    const p = (n) => String(n).padStart(2, '0');
+    return `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`;
+  }
+  function currentToday() {
+    if (data.today && data.today.date === todayStr(new Date())) return data.today;
+    return null;
+  }
+  function renderToday() {
+    if (!data.self) { $('today-declaration').hidden = true; return; }
+    $('today-declaration').hidden = false;
+    const t = currentToday();
+    $('today-form').hidden = !!t;
+    $('today-set').hidden = !t;
+    if (t) {
+      $('today-text').textContent = t.text;
+      $('today-done').checked = t.done;
+      $('today-set').classList.toggle('done', t.done);
+    } else {
+      $('today-input').value = '';
+    }
+  }
+  $('today-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const text = $('today-input').value.trim();
+    if (!text) return;
+    data.today = { date: todayStr(new Date()), text, done: false };
+    persist();
+  });
+  $('today-done').addEventListener('change', (e) => {
+    if (!data.today) return;
+    data.today.done = e.target.checked;
+    if (e.target.checked) celebrate();
+    persist();
+  });
+  $('today-clear').addEventListener('click', () => {
+    data.today = null;
+    persist();
+  });
+
+  // --- 見つめる画面 ---
+  function renderInsight() {
+    const has = !!data.self;
+    $('insight-empty').hidden = has;
+    const wrap = $('insight-cards');
+    if (!has) { wrap.textContent = ''; return; }
+    const cards = Insight.build(data.self, deathDates.self, new Date());
+    // 毎秒呼ばれるので、枚数が同じなら要素を作り直さず value/sub だけ更新
+    if (wrap.childElementCount !== cards.length) {
+      wrap.textContent = '';
+      for (const c of cards) {
+        const el = document.createElement('div');
+        el.className = 'insight-card';
+        el.dataset.id = c.id;
+        el.innerHTML = '<p class="insight-label"></p><p class="insight-value"></p><p class="insight-sub"></p>';
+        wrap.appendChild(el);
+      }
+    }
+    const els = wrap.children;
+    cards.forEach((c, i) => {
+      const el = els[i];
+      el.querySelector('.insight-label').textContent = c.label;
+      el.querySelector('.insight-value').textContent = c.value;
+      el.querySelector('.insight-sub').textContent = c.sub;
+    });
+  }
 
   // --- 家族画面 ---
   const FREQ_LABEL = {
@@ -273,12 +370,21 @@
       alert('誕生日が不正です');
       return;
     }
-    const span = $('set-lifespan').value;
+    const span = $('set-lifespan').value.trim();
+    let customLifespan = null;
+    if (span) {
+      const n = Number(span);
+      if (!Number.isFinite(n) || n < 1 || n > 150) {
+        alert('目標寿命は1〜150の数字で入力してください(未設定なら空欄)');
+        return;
+      }
+      customLifespan = n;
+    }
     data.self = {
       name: data.self.name || '',
       birthDate,
       gender: $('set-gender').value,
-      customLifespan: span ? Number(span) : null,
+      customLifespan,
     };
     selfView = 'timer';
     persist();
@@ -344,17 +450,23 @@
 
   // --- 毎秒更新 ---
   function tick() {
-    if (data && data.self) renderSelf();
+    if (!data || !data.self) return;
+    if ($('screen-self').classList.contains('active')) { renderSelf(); renderToday(); }
+    if ($('screen-insight').classList.contains('active')) renderInsight();
   }
 
   function render() {
     renderSelf();
+    renderToday();
+    renderInsight();
     renderFamily();
     renderWishes();
   }
 
   // --- 起動 ---
   function init() {
+    shuffleQuotes();
+    showQuote();
     const r = LifeStore.load(localStorage);
     if (r.corrupt) {
       $('corrupt-notice').hidden = false;

@@ -28,3 +28,25 @@ test('負の年齢は0歳扱い', () => {
 test('不明な性別はエラー', () => {
   assert.throws(() => LifeTable.remainingYears('other', 30));
 });
+
+test('annualMortality: 掲載年齢はそのままの値', () => {
+  assert.equal(LifeTable.annualMortality('male', 40), 0.00102);
+  assert.equal(LifeTable.annualMortality('female', 65), 0.00437);
+});
+
+test('annualMortality: 中間年齢は線形補間', () => {
+  const v = LifeTable.annualMortality('male', 42.5);
+  assert.ok(Math.abs(v - (0.00102 + 0.00147) / 2) < 1e-9);
+});
+
+test('annualMortality: 105歳以上は1.0', () => {
+  assert.equal(LifeTable.annualMortality('female', 110), 1);
+});
+
+test('annualMortality: 負の年齢は0歳値', () => {
+  assert.equal(LifeTable.annualMortality('male', -3), 0.00065);
+});
+
+test('annualMortality: 不明な性別はエラー', () => {
+  assert.throws(() => LifeTable.annualMortality('x', 30));
+});

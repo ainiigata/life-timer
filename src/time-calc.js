@@ -84,5 +84,40 @@
     return Math.floor(years * freqPerYear(freq));
   }
 
-  return { MS_PER_YEAR, parseDate, breakdown, expectedDeathDate, progressPercent, freqPerYear, meetCount };
+  function remainingSeconds(now, death) {
+    return Math.max(0, Math.floor((death.getTime() - now.getTime()) / 1000));
+  }
+
+  function countByRatePerMinute(remainingSec, perMinute) {
+    return Math.floor(remainingSec * perMinute / 60);
+  }
+
+  function occurrencesUntil(now, death, perYear) {
+    const years = Math.max(0, (death.getTime() - now.getTime()) / MS_PER_YEAR);
+    return Math.floor(years * perYear);
+  }
+
+  function daysLived(birthDateStr, now) {
+    const days = Math.floor((now.getTime() - parseDate(birthDateStr).getTime()) / MS_DAY);
+    return Math.max(0, days);
+  }
+
+  function dailyDeathProbability(qxAnnual) {
+    return 1 - Math.pow(1 - qxAnnual, 1 / 365);
+  }
+
+  function awakeRemainingToday(now, bedHour) {
+    const bed = new Date(now);
+    bed.setHours(bedHour, 0, 0, 0);
+    let ms = bed.getTime() - now.getTime();
+    if (ms <= 0) return { hours: 0, minutes: 0 };
+    const hours = Math.floor(ms / 3600000); ms -= hours * 3600000;
+    const minutes = Math.floor(ms / 60000);
+    return { hours, minutes };
+  }
+
+  return {
+    MS_PER_YEAR, parseDate, breakdown, expectedDeathDate, progressPercent, freqPerYear, meetCount,
+    remainingSeconds, countByRatePerMinute, occurrencesUntil, daysLived, dailyDeathProbability, awakeRemainingToday,
+  };
 });
