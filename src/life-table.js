@@ -22,6 +22,22 @@
       90: 5.53, 95: 3.45, 100: 2.13, 105: 1.33,
     },
   };
+  // 年間死亡率(qx: 年齢xの人が1年以内に死亡する確率)。出典・加工は上記に同じ
+  const MORTALITY = {
+    male: {
+      0: 0.00065, 5: 0.00009, 10: 0.00006, 15: 0.00018, 20: 0.00043, 25: 0.00050,
+      30: 0.00055, 35: 0.00073, 40: 0.00102, 45: 0.00147, 50: 0.00243, 55: 0.00399,
+      60: 0.00633, 65: 0.01049, 70: 0.01724, 75: 0.02839, 80: 0.04773, 85: 0.08414,
+      90: 0.15182, 95: 0.25176, 100: 0.40062, 105: 1,
+    },
+    female: {
+      0: 0.00061, 5: 0.00008, 10: 0.00006, 15: 0.00015, 20: 0.00027, 25: 0.00028,
+      30: 0.00028, 35: 0.00041, 40: 0.00059, 45: 0.00088, 50: 0.00146, 55: 0.00211,
+      60: 0.00300, 65: 0.00437, 70: 0.00703, 75: 0.01215, 80: 0.02269, 85: 0.04654,
+      90: 0.09579, 95: 0.18687, 100: 0.32744, 105: 1,
+    },
+  };
+
   const AGES = Object.keys(LIFE_TABLE.male).map(Number).sort((a, b) => a - b);
   const MAX_AGE = AGES[AGES.length - 1];
 
@@ -39,5 +55,19 @@
     return t[lo] + (t[hi] - t[lo]) * ratio;
   }
 
-  return { LIFE_TABLE, remainingYears };
+  function annualMortality(gender, age) {
+    const t = MORTALITY[gender];
+    if (!t) throw new Error('unknown gender: ' + gender);
+    if (age <= 0) return t[0];
+    if (age >= MAX_AGE) return t[MAX_AGE];
+    let lo = AGES[0];
+    for (const a of AGES) {
+      if (a <= age) lo = a; else break;
+    }
+    const hi = AGES[AGES.indexOf(lo) + 1];
+    const ratio = (age - lo) / (hi - lo);
+    return t[lo] + (t[hi] - t[lo]) * ratio;
+  }
+
+  return { LIFE_TABLE, MORTALITY, remainingYears, annualMortality };
 });
