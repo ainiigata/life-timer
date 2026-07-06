@@ -38,7 +38,7 @@ test('script閉じタグの早期終了がない', () => {
   const open = (html.match(/<script>/g) || []).length;
   const close = (html.match(/<\/script>/g) || []).length;
   assert.equal(open, close);
-  assert.equal(open, 4);
+  assert.equal(open, 6);
 });
 
 test('主要モジュールが同梱されている', () => {
