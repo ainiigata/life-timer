@@ -10,7 +10,7 @@
   const FREQ_RE = /^(daily|weekly|monthly|yearly-\d+)$/;
 
   function emptyData() {
-    return { version: 1, self: null, family: [], wishes: [] };
+    return { version: 1, self: null, family: [], wishes: [], today: null };
   }
 
   function isValidDateStr(s) {
@@ -67,6 +67,13 @@
           !(typeof w.targetAge === 'number' && w.targetAge > 0 && w.targetAge <= 150)) {
         return { ok: false, error: '目標年齢が不正です(1〜150)' };
       }
+    }
+    if (data.today != null) {
+      const t = data.today;
+      if (typeof t !== 'object') return { ok: false, error: 'today が不正です' };
+      if (typeof t.date !== 'string' || t.date === '') return { ok: false, error: '今日の宣言の日付が不正です' };
+      if (typeof t.text !== 'string' || t.text === '') return { ok: false, error: '今日の宣言のテキストが不正です' };
+      if (typeof t.done !== 'boolean') return { ok: false, error: '今日の宣言の done が不正です' };
     }
     return { ok: true };
   }

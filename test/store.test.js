@@ -118,3 +118,25 @@ test('isValidDateStr: "2026-02-30" (存在しない日付) → false', () => {
 test('isValidDateStr: "2026-02-28" (有効な日付) → true', () => {
   assert.equal(LifeStore.isValidDateStr('2026-02-28'), true);
 });
+
+test('emptyData は today:null を含む', () => {
+  assert.equal(LifeStore.emptyData().today, null);
+});
+
+test('validate: 正しい today を許容', () => {
+  const d = JSON.parse(JSON.stringify(VALID));
+  d.today = { date: '2026-07-07', text: '履歴書を書く', done: false };
+  assert.equal(LifeStore.validate(d).ok, true);
+});
+
+test('validate: today なしの古いデータも許容(後方互換)', () => {
+  const d = JSON.parse(JSON.stringify(VALID));
+  delete d.today;
+  assert.equal(LifeStore.validate(d).ok, true);
+});
+
+test('validate: 壊れた today を拒否', () => {
+  const d = JSON.parse(JSON.stringify(VALID));
+  d.today = { date: '', text: 123, done: 'no' };
+  assert.equal(LifeStore.validate(d).ok, false);
+});
