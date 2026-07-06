@@ -265,7 +265,7 @@ form input::placeholder {
    Buttons
    ============================================================ */
 button[type="submit"],
-button:not(.tab-btn):not(.ghost-btn):not(.danger-btn):not(.file-btn):not(#open-settings) {
+button:not(.tab-btn):not(.ghost-btn):not(.danger-btn):not(.file-btn):not(#open-settings):not(.quote-banner) {
   display: inline-block;
   width: 100%;
   padding: 14px 20px;
@@ -284,13 +284,13 @@ button:not(.tab-btn):not(.ghost-btn):not(.danger-btn):not(.file-btn):not(#open-s
 }
 
 button[type="submit"]:hover,
-button:not(.tab-btn):not(.ghost-btn):not(.danger-btn):not(.file-btn):not(#open-settings):hover {
+button:not(.tab-btn):not(.ghost-btn):not(.danger-btn):not(.file-btn):not(#open-settings):not(.quote-banner):hover {
   background: var(--orange-dark);
   box-shadow: 0 4px 16px rgba(255, 138, 61, 0.45);
 }
 
 button[type="submit"]:active,
-button:not(.tab-btn):not(.ghost-btn):not(.danger-btn):not(.file-btn):not(#open-settings):active {
+button:not(.tab-btn):not(.ghost-btn):not(.danger-btn):not(.file-btn):not(#open-settings):not(.quote-banner):active {
   transform: scale(0.98);
 }
 
@@ -1008,14 +1008,14 @@ dialog::backdrop {
 
   /* Primary / submit buttons */
   button[type="submit"]:hover,
-  button:not(.tab-btn):not(.ghost-btn):not(.danger-btn):not(.file-btn):not(#open-settings):hover {
+  button:not(.tab-btn):not(.ghost-btn):not(.danger-btn):not(.file-btn):not(#open-settings):not(.quote-banner):hover {
     background: var(--orange-dark);
     box-shadow: 0 6px 20px rgba(255, 138, 61, 0.45);
     transform: translateY(-1px);
   }
 
   button[type="submit"]:active,
-  button:not(.tab-btn):not(.ghost-btn):not(.danger-btn):not(.file-btn):not(#open-settings):active {
+  button:not(.tab-btn):not(.ghost-btn):not(.danger-btn):not(.file-btn):not(#open-settings):not(.quote-banner):active {
     transform: translateY(0) scale(0.98);
   }
 
@@ -1294,4 +1294,10 @@ dialog::backdrop {
 }
 #today-clear {
   margin-top: 12px;
+}
+
+/* 今日の宣言の「決める」ボタン: グローバルbuttonルールの width:100% を上書き(入力欄を潰さない) */
+#screen-self #today-form button {
+  width: auto;
+  flex: 0 0 auto;
 }

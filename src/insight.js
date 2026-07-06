@@ -56,7 +56,7 @@
       { id: 'breakdown', label: '残り時間の内訳', value: `眠っている時間だけで 約${Math.floor(years * SLEEP_FRACTION)}年`, sub: `起きて使える時間は 約${Math.floor(years * (1 - SLEEP_FRACTION))}年` },
       { id: 'counts', label: 'あと何回、めぐってくる?', value: `桜 ${yearlyCount}回 ・ 年末 ${yearlyCount}回`, sub: `満月は あと約${formatOku(moonCount)}回` },
       { id: 'death-prob', label: '明日、無事に朝を迎えられる確率', value: `${surviveP}%`, sub: `それでも、宝くじ1等(約2000万分の1)より、明日が来ない可能性のほうが約${timesVsLottery}倍高い。だから、今日を大切に。` },
-      { id: 'parent-days', label: '親が見守ってくれた日々', value: `${formatOku(TimeCalc.daysLived(person.birthDate, now))} 日`, sub: 'あなたが生きてきた日数です' },
+      { id: 'parent-days', label: '親が見守ってくれた日々', value: `${TimeCalc.daysLived(person.birthDate, now).toLocaleString('en-US')} 日`, sub: 'あなたが生きてきた日数。この一日一日を、誰かが願ってくれました' },
       { id: 'today-remaining', label: '今日、起きていられる時間', value: awakeValue, sub: '一日は、今日ももう戻ってきません' },
     ];
   }
