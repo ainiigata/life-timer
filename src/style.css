@@ -1209,3 +1209,89 @@ dialog::backdrop {
   color: var(--warm-gray);
   text-align: center;
 }
+
+/* ============================================================
+   今日の宣言(わたし画面)
+   ============================================================ */
+.today-declaration {
+  background: var(--cream-dark);
+  border: 1.5px dashed var(--orange-light);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin: 4px 0 18px;
+  text-align: left;
+}
+.today-declaration label {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--brown-mid);
+  font-family: var(--font-sans);
+  margin-bottom: 8px;
+}
+.today-row {
+  display: flex;
+  gap: 8px;
+}
+#today-input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1.5px solid var(--warm-gray-lt);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-family: var(--font-sans);
+  background: var(--white);
+  color: var(--brown);
+}
+#today-input:focus {
+  outline: none;
+  border-color: var(--orange);
+}
+#today-form button {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--orange);
+  color: var(--white);
+  font-weight: 700;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+@media (hover: hover) {
+  #today-form button:hover { background: var(--orange-dark); }
+}
+.today-set-label {
+  font-size: 0.75rem;
+  color: var(--brown-light);
+  margin-bottom: 8px;
+  font-family: var(--font-sans);
+}
+.today-check {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0 !important;
+  cursor: pointer;
+}
+.today-check input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--orange);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+#today-text {
+  font-size: 1.05rem;
+  font-family: var(--font-serif);
+  color: var(--brown);
+  font-weight: 500;
+}
+#today-set.done #today-text {
+  text-decoration: line-through;
+  opacity: 0.55;
+}
+#today-clear {
+  margin-top: 12px;
+}

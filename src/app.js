@@ -108,6 +108,47 @@
     persist();
   });
 
+  // --- 今日の宣言 ---
+  function todayStr(now) {
+    const p = (n) => String(n).padStart(2, '0');
+    return `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`;
+  }
+  function currentToday() {
+    if (data.today && data.today.date === todayStr(new Date())) return data.today;
+    return null;
+  }
+  function renderToday() {
+    if (!data.self) { $('today-declaration').hidden = true; return; }
+    $('today-declaration').hidden = false;
+    const t = currentToday();
+    $('today-form').hidden = !!t;
+    $('today-set').hidden = !t;
+    if (t) {
+      $('today-text').textContent = t.text;
+      $('today-done').checked = t.done;
+      $('today-set').classList.toggle('done', t.done);
+    } else {
+      $('today-input').value = '';
+    }
+  }
+  $('today-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const text = $('today-input').value.trim();
+    if (!text) return;
+    data.today = { date: todayStr(new Date()), text, done: false };
+    persist();
+  });
+  $('today-done').addEventListener('change', (e) => {
+    if (!data.today) return;
+    data.today.done = e.target.checked;
+    if (e.target.checked) celebrate();
+    persist();
+  });
+  $('today-clear').addEventListener('click', () => {
+    data.today = null;
+    persist();
+  });
+
   // --- 見つめる画面 ---
   function renderInsight() {
     const has = !!data.self;
@@ -400,12 +441,13 @@
   // --- 毎秒更新 ---
   function tick() {
     if (!data || !data.self) return;
-    if ($('screen-self').classList.contains('active')) renderSelf();
+    if ($('screen-self').classList.contains('active')) { renderSelf(); renderToday(); }
     if ($('screen-insight').classList.contains('active')) renderInsight();
   }
 
   function render() {
     renderSelf();
+    renderToday();
     renderInsight();
     renderFamily();
     renderWishes();

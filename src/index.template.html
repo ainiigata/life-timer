@@ -50,6 +50,20 @@
       <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
       <p id="progress-text"></p>
       <p id="today-message" class="message">今日をどう使う?</p>
+      <div id="today-declaration" class="today-declaration">
+        <form id="today-form">
+          <label for="today-input">今日やることを1つ</label>
+          <div class="today-row">
+            <input type="text" id="today-input" maxlength="60" placeholder="例: 履歴書を書く">
+            <button type="submit">決める</button>
+          </div>
+        </form>
+        <div id="today-set" hidden>
+          <p class="today-set-label">今日の宣言</p>
+          <label class="today-check"><input type="checkbox" id="today-done"> <span id="today-text"></span></label>
+          <button type="button" id="today-clear" class="ghost-btn">変更する</button>
+        </div>
+      </div>
       <button id="open-settings" class="ghost-btn">設定</button>
     </div>
     <div id="settings" hidden>
