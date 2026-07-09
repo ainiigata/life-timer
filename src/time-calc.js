@@ -116,8 +116,18 @@
     return { hours, minutes };
   }
 
+  function childRemainingDays(birthDate, targetAge, now) {
+    const birth = parseDate(birthDate);
+    const milestone = new Date(birth);
+    milestone.setFullYear(milestone.getFullYear() + targetAge);
+    const ms = milestone - now;
+    if (ms <= 0) return { days: 0, expired: true };
+    return { days: Math.ceil(ms / (1000 * 60 * 60 * 24)), expired: false };
+  }
+
   return {
     MS_PER_YEAR, parseDate, breakdown, expectedDeathDate, progressPercent, freqPerYear, meetCount,
     remainingSeconds, countByRatePerMinute, occurrencesUntil, daysLived, dailyDeathProbability, awakeRemainingToday,
+    childRemainingDays,
   };
 });

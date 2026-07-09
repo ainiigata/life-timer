@@ -126,3 +126,29 @@ test('awakeRemainingToday: 就寝前は残りあり・就寝後は0', () => {
   const after = TimeCalc.awakeRemainingToday(new Date(2026, 0, 1, 23, 30, 0), 23);
   assert.deepEqual(after, { hours: 0, minutes: 0 });
 });
+
+// --- childRemainingDays ---
+test('childRemainingDays: 未来のマイルストーンは正の日数を返す', () => {
+  const birth = '2022-07-09'; // 4歳
+  const now = new Date(2026, 6, 9); // 2026-07-09
+  const r = TimeCalc.childRemainingDays(birth, 6, now);
+  assert.strictEqual(r.expired, false);
+  assert.ok(r.days > 0);
+  // 6歳の誕生日 = 2028-07-09 まで約730日
+  assert.ok(r.days > 700 && r.days < 800);
+});
+
+test('childRemainingDays: 過去のマイルストーンはexpired', () => {
+  const birth = '2015-01-01'; // 11歳
+  const now = new Date(2026, 6, 9);
+  const r = TimeCalc.childRemainingDays(birth, 6, now);
+  assert.strictEqual(r.expired, true);
+  assert.strictEqual(r.days, 0);
+});
+
+test('childRemainingDays: マイルストーン当日はexpired', () => {
+  const birth = '2020-07-09';
+  const now = new Date(2026, 6, 9); // ちょうど6歳の誕生日
+  const r = TimeCalc.childRemainingDays(birth, 6, now);
+  assert.strictEqual(r.expired, true);
+});
