@@ -113,6 +113,40 @@
     persist();
   });
 
+  // --- 優先順位 ---
+  const DEFAULT_PRIORITIES = ['家族', '仕事', '自分', '余暇', '睡眠'];
+
+  function renderPriorities() {
+    const section = $('priority-section');
+    if (!data.self) { section.hidden = true; return; }
+    section.hidden = false;
+    const items = data.priorities || DEFAULT_PRIORITIES;
+    const list = $('priority-list');
+    list.textContent = '';
+    items.forEach((item, i) => {
+      const li = document.createElement('li');
+      li.className = 'priority-item';
+      li.innerHTML = `<span class="priority-label"></span>
+        <button class="ghost-btn pri-btn" data-pri-up="${i}" ${i === 0 ? 'disabled' : ''} aria-label="上へ">↑</button>
+        <button class="ghost-btn pri-btn" data-pri-down="${i}" ${i === items.length - 1 ? 'disabled' : ''} aria-label="下へ">↓</button>`;
+      li.querySelector('.priority-label').textContent = item;
+      list.appendChild(li);
+    });
+  }
+
+  document.addEventListener('click', (e) => {
+    const upIdx = e.target.dataset && e.target.dataset.priUp;
+    const downIdx = e.target.dataset && e.target.dataset.priDown;
+    if (upIdx == null && downIdx == null) return;
+    const idx = upIdx != null ? Number(upIdx) : Number(downIdx);
+    const items = [...(data.priorities || DEFAULT_PRIORITIES)];
+    const swapWith = upIdx != null ? idx - 1 : idx + 1;
+    if (swapWith < 0 || swapWith >= items.length) return;
+    [items[idx], items[swapWith]] = [items[swapWith], items[idx]];
+    data.priorities = items;
+    persist();
+  });
+
   // --- 今日の宣言 ---
   function todayStr(now) {
     const p = (n) => String(n).padStart(2, '0');
@@ -491,12 +525,13 @@
   // --- 毎秒更新 ---
   function tick() {
     if (!data || !data.self) return;
-    if ($('screen-self').classList.contains('active')) { renderSelf(); renderToday(); }
+    if ($('screen-self').classList.contains('active')) { renderSelf(); renderPriorities(); renderToday(); }
     if ($('screen-insight').classList.contains('active')) renderInsight();
   }
 
   function render() {
     renderSelf();
+    renderPriorities();
     renderToday();
     renderInsight();
     renderFamily();

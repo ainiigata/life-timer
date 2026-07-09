@@ -79,3 +79,7 @@ test('今の夢バナー要素がある', () => {
   assert.ok(html.includes('id="dream-banner"'));
   assert.ok(html.includes('id="dream-title"'));
 });
+
+test('優先順位リスト要素がある', () => {
+  assert.ok(html.includes('id="priority-list"'));
+});

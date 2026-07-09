@@ -1339,6 +1339,44 @@ dialog::backdrop {
   margin: 0;
 }
 
+/* 優先順位 */
+#priority-section {
+  margin: 1rem 0 0.5rem;
+}
+.priority-heading {
+  font-size: 0.9rem;
+  color: var(--brown-light);
+  margin: 0 0 0.1rem;
+}
+.priority-note {
+  font-size: 0.75rem;
+  color: #bbb;
+  margin: 0 0 0.5rem;
+}
+.priority-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.priority-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid #f0ece6;
+}
+.priority-item:last-child { border-bottom: none; }
+.priority-label {
+  flex: 1;
+  font-size: 0.95rem;
+}
+.pri-btn {
+  font-size: 0.85rem;
+  padding: 0.15rem 0.4rem;
+  min-width: 1.8rem;
+}
+.pri-btn:disabled { opacity: 0.25; cursor: default; }
+
 /* ピン留めボタン */
 .pin-btn {
   background: none;
