@@ -8,9 +8,11 @@
   const KEY = 'life-timer-v1';
   const GENDERS = ['male', 'female'];
   const FREQ_RE = /^(daily|weekly|monthly|yearly-\d+)$/;
+  const RELATIONSHIP_RE = /^(child|parent|spouse|sibling|friend|other)$/;
+  const PRIORITIES_REQUIRED = ['家族', '仕事', '自分', '余暇', '睡眠'];
 
   function emptyData() {
-    return { version: 1, self: null, family: [], wishes: [], today: null };
+    return { version: 1, self: null, family: [], wishes: [], today: null, priorities: null };
   }
 
   function isValidDateStr(s) {
@@ -53,6 +55,9 @@
       if (typeof f.meetFrequency !== 'string' || !FREQ_RE.test(f.meetFrequency)) {
         return { ok: false, error: '会う頻度が不正です' };
       }
+      if (f.relationship != null && !RELATIONSHIP_RE.test(f.relationship)) {
+        return { ok: false, error: '家族の続柄が不正です' };
+      }
     }
     if (!Array.isArray(data.wishes)) return { ok: false, error: 'wishes が配列ではありません' };
     for (const w of data.wishes) {
@@ -66,6 +71,15 @@
       if (w.targetAge != null &&
           !(typeof w.targetAge === 'number' && w.targetAge > 0 && w.targetAge <= 150)) {
         return { ok: false, error: '目標年齢が不正です(1〜150)' };
+      }
+      if (w.pinned != null && typeof w.pinned !== 'boolean') {
+        return { ok: false, error: 'pinned がboolean ではありません' };
+      }
+    }
+    if (data.priorities != null) {
+      if (!Array.isArray(data.priorities) || data.priorities.length !== PRIORITIES_REQUIRED.length
+          || !PRIORITIES_REQUIRED.every((r) => data.priorities.includes(r))) {
+        return { ok: false, error: 'priorities の内容が不正です' };
       }
     }
     if (data.today != null) {

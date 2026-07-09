@@ -140,3 +140,64 @@ test('validate: 壊れた today を拒否', () => {
   d.today = { date: '', text: 123, done: 'no' };
   assert.equal(LifeStore.validate(d).ok, false);
 });
+
+// --- v2第2弾: relationship / pinned / priorities ---
+
+test('family.relationship: 有効値は通る', () => {
+  const { emptyData, validate } = LifeStore;
+  const d = emptyData();
+  d.family = [{ id: 'a1', name: '花子', birthDate: '2020-01-01', gender: 'female',
+    customLifespan: null, meetFrequency: 'daily', relationship: 'child' }];
+  assert.ok(validate(d).ok);
+});
+
+test('family.relationship: 不正値はエラー', () => {
+  const { emptyData, validate } = LifeStore;
+  const d = emptyData();
+  d.family = [{ id: 'a1', name: '花子', birthDate: '2020-01-01', gender: 'female',
+    customLifespan: null, meetFrequency: 'daily', relationship: 'alien' }];
+  assert.ok(!validate(d).ok);
+});
+
+test('family.relationship: 省略時(旧データ)は通る', () => {
+  const { emptyData, validate } = LifeStore;
+  const d = emptyData();
+  d.family = [{ id: 'a1', name: '花子', birthDate: '2020-01-01', gender: 'female',
+    customLifespan: null, meetFrequency: 'daily' }];
+  assert.ok(validate(d).ok);
+});
+
+test('wish.pinned: true/false は通る', () => {
+  const { emptyData, validate } = LifeStore;
+  const d = emptyData();
+  d.wishes = [{ id: 'w1', title: '富士山', done: false, createdAt: '2026-01-01', doneAt: null, targetAge: null, pinned: true }];
+  assert.ok(validate(d).ok);
+});
+
+test('wish.pinned: 不正値はエラー', () => {
+  const { emptyData, validate } = LifeStore;
+  const d = emptyData();
+  d.wishes = [{ id: 'w1', title: '富士山', done: false, createdAt: '2026-01-01', doneAt: null, targetAge: null, pinned: 'yes' }];
+  assert.ok(!validate(d).ok);
+});
+
+test('data.priorities: 正しい5項目は通る', () => {
+  const { emptyData, validate } = LifeStore;
+  const d = emptyData();
+  d.priorities = ['自分', '家族', '仕事', '余暇', '睡眠'];
+  assert.ok(validate(d).ok);
+});
+
+test('data.priorities: 不足・重複はエラー', () => {
+  const { emptyData, validate } = LifeStore;
+  const d = emptyData();
+  d.priorities = ['家族', '仕事', '自分'];
+  assert.ok(!validate(d).ok);
+});
+
+test('data.priorities: null は通る(省略扱い)', () => {
+  const { emptyData, validate } = LifeStore;
+  const d = emptyData();
+  d.priorities = null;
+  assert.ok(validate(d).ok);
+});
