@@ -192,17 +192,38 @@
     for (const f of data.family) {
       const death = deathDates.family.get(f.id);
       const b = TimeCalc.breakdown(now, death);
+      const rel = f.relationship || 'other';
       const li = document.createElement('li');
       li.className = 'family-card';
-      const meets = data.self && deathDates.self
-        ? TimeCalc.meetCount(deathDates.self, death, f.meetFrequency, now)
-        : null;
-      li.innerHTML = `
-        <div class="family-head"><strong></strong><button class="ghost-btn" data-edit="${f.id}">編集</button></div>
+
+      let meetsHtml = '';
+      if (rel === 'child') {
+        const hug = TimeCalc.childRemainingDays(f.birthDate, 6, now);
+        const live = TimeCalc.childRemainingDays(f.birthDate, 18, now);
+        if (!hug.expired) {
+          meetsHtml += `<p class="child-days">抱っこできる残り <strong>${hug.days.toLocaleString()}日</strong></p>`;
+        }
+        if (!live.expired) {
+          meetsHtml += `<p class="child-days">一緒に暮らせる残り <strong>${live.days.toLocaleString()}日</strong></p>`;
+        }
+        if (hug.expired && live.expired) {
+          const meets = data.self && deathDates.self
+            ? TimeCalc.meetCount(deathDates.self, death, f.meetFrequency, now) : null;
+          meetsHtml = meets === null ? '<p class="family-meets">わたしの誕生日を設定すると回数が出ます</p>'
+            : `<p class="family-meets">${FREQ_LABEL[f.meetFrequency] || '会うなら'} <strong class="meets-num">あと${meets}回</strong></p>`;
+        }
+      } else {
+        const meets = data.self && deathDates.self
+          ? TimeCalc.meetCount(deathDates.self, death, f.meetFrequency, now) : null;
+        const meetsClass = (rel === 'parent' || rel === 'spouse') ? 'family-meets emphasis' : 'family-meets';
+        meetsHtml = meets === null ? `<p class="${meetsClass}">わたしの誕生日を設定すると回数が出ます</p>`
+          : `<p class="${meetsClass}">${FREQ_LABEL[f.meetFrequency] || '会うなら'} <strong class="meets-num">あと${meets}回</strong></p>`;
+      }
+
+      li.innerHTML = `<div class="family-head"><strong></strong><button class="ghost-btn" data-edit="${f.id}">編集</button></div>
         <p class="family-remain">残り ${b.expired ? '—' : `${b.years}年${b.months}ヶ月`}</p>
-        <p class="family-meets">${meets === null ? 'わたしの誕生日を設定すると回数が出ます'
-          : `${FREQ_LABEL[f.meetFrequency] || '会うなら'} <strong class="meets-num">あと${meets}回</strong>`}</p>`;
-      li.querySelector('strong').textContent = f.name; // XSS防止のためtextContentで注入
+        ${meetsHtml}`;
+      li.querySelector('strong').textContent = f.name;
       list.appendChild(li);
     }
   }
@@ -217,6 +238,7 @@
     $('fam-name').value = f.name;
     $('fam-birth').value = f.birthDate;
     $('fam-gender').value = f.gender;
+    $('fam-relation').value = f.relationship || 'other';
     $('fam-freq').value = f.meetFrequency;
     $('fam-delete').hidden = false;
     $('family-dialog').showModal();
@@ -243,6 +265,7 @@
       birthDate,
       gender: $('fam-gender').value,
       customLifespan: null,
+      relationship: $('fam-relation').value,
       meetFrequency: $('fam-freq').value,
     };
     if (editingFamilyId) {

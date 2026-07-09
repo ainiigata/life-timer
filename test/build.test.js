@@ -69,3 +69,8 @@ test('sw.jsのキャッシュ名にビルドハッシュが刻印されている
 test('CSPがselfの画像(PWAアイコン)を許可している', () => {
   assert.ok(html.includes("img-src data: 'self'"));
 });
+
+test('家族ダイアログに続柄セレクトがある', () => {
+  assert.ok(html.includes('id="fam-relation"'));
+  assert.ok(html.includes('value="child"'));
+});
