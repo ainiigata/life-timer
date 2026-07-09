@@ -74,3 +74,8 @@ test('家族ダイアログに続柄セレクトがある', () => {
   assert.ok(html.includes('id="fam-relation"'));
   assert.ok(html.includes('value="child"'));
 });
+
+test('今の夢バナー要素がある', () => {
+  assert.ok(html.includes('id="dream-banner"'));
+  assert.ok(html.includes('id="dream-title"'));
+});

@@ -96,6 +96,10 @@
     const pct = TimeCalc.progressPercent(data.self.birthDate, deathDates.self, now);
     $('progress-bar').style.width = pct.toFixed(2) + '%';
     $('progress-text').textContent = `人生の ${pct.toFixed(1)}% を生きました`;
+    const pinned = data.wishes.find((w) => w.pinned && !w.done);
+    const banner = $('dream-banner');
+    banner.hidden = !pinned;
+    if (pinned) $('dream-title').textContent = pinned.title;
   }
 
   $('onboarding-form').addEventListener('submit', (e) => {
@@ -309,6 +313,7 @@
       li.className = 'wish-item';
       li.innerHTML = `<label><input type="checkbox" data-wish="${w.id}"> <span class="wish-title"></span></label>
         <span class="wish-remain">${wishRemainLabel(w)}</span>
+        <button class="pin-btn${w.pinned ? ' pinned' : ''}" data-pin="${w.id}" aria-label="今の夢にする">${w.pinned ? '★' : '☆'}</button>
         <button class="ghost-btn" data-del-wish="${w.id}" aria-label="削除">×</button>`;
       li.querySelector('.wish-title').textContent = w.title;
       list.appendChild(li);
@@ -368,6 +373,18 @@
     if (!id) return;
     if (!confirm('このやりたいことを削除しますか?')) return;
     data.wishes = data.wishes.filter((x) => x.id !== id);
+    persist();
+  });
+
+  document.addEventListener('click', (e) => {
+    const id = e.target.dataset && e.target.dataset.pin;
+    if (!id) return;
+    const wasPin = !!(data.wishes.find((w) => w.id === id) || {}).pinned;
+    data.wishes.forEach((w) => { w.pinned = false; });
+    if (!wasPin) {
+      const w = data.wishes.find((w) => w.id === id);
+      if (w && !w.done) w.pinned = true;
+    }
     persist();
   });
 
