@@ -38,7 +38,7 @@ test('script閉じタグの早期終了がない', () => {
   const open = (html.match(/<script>/g) || []).length;
   const close = (html.match(/<\/script>/g) || []).length;
   assert.equal(open, close);
-  assert.equal(open, 6);
+  assert.equal(open, 7);
 });
 
 test('主要モジュールが同梱されている', () => {
@@ -87,4 +87,17 @@ test('優先順位リスト要素がある', () => {
 test('Life in Weeks グリッド要素がある', () => {
   assert.ok(html.includes('id="weeks-grid-section"'));
   assert.ok(html.includes('id="weeks-grid"'));
+});
+
+test('ストリーク行と今日の問いカードがある', () => {
+  assert.ok(html.includes('id="streak-line"'));
+  assert.ok(html.includes('id="question-card"'));
+  assert.ok(html.includes('id="question-text"'));
+  assert.ok(html.includes('id="question-past"'));
+  assert.ok(html.includes('id="reflection-form"'));
+});
+
+test('Questionsモジュールが同梱されている', () => {
+  assert.ok(html.includes('Questions'));
+  assert.ok(html.includes('今日、いちばん会いたい人は誰ですか?'));
 });

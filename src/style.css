@@ -1435,3 +1435,93 @@ dialog::backdrop {
 .pin-btn.pinned {
   color: var(--orange);
 }
+
+/* v3: ストリーク & 今日の問い */
+.streak-line {
+  font-size: 0.85rem;
+  color: var(--orange);
+  font-weight: 600;
+  text-align: center;
+  margin: 0 0 0.5rem;
+}
+
+.question-card {
+  background: var(--cream-dark);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  margin: 1rem 0 0.5rem;
+  border-left: 3px solid var(--orange-light);
+}
+
+.question-label {
+  font-size: 0.7rem;
+  color: var(--brown-light);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.4rem;
+}
+
+.question-text {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  color: var(--brown);
+  margin: 0 0 0.6rem;
+  line-height: 1.5;
+}
+
+.question-past {
+  font-size: 0.82rem;
+  color: var(--brown-light);
+  background: var(--white);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.6rem;
+  margin: 0 0 0.6rem;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.reflection-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.reflection-row input {
+  flex: 1;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--warm-gray);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  background: var(--white);
+  color: var(--brown);
+  font-family: var(--font-sans);
+}
+
+.reflection-row input:focus {
+  outline: none;
+  border-color: var(--orange);
+}
+
+.reflection-row button {
+  padding: 0.45rem 0.75rem;
+  background: var(--orange);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  white-space: nowrap;
+}
+
+.reflection-row button:hover {
+  background: var(--orange-dark);
+}
+
+.reflection-saved {
+  font-size: 0.78rem;
+  color: #3dbf6e;
+  text-align: center;
+  margin: 0.3rem 0 0;
+}

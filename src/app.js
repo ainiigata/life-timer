@@ -100,6 +100,18 @@
     const banner = $('dream-banner');
     banner.hidden = !pinned;
     if (pinned) $('dream-title').textContent = pinned.title;
+    renderStreak();
+  }
+
+  // --- ストリーク ---
+  function renderStreak() {
+    const el = $('streak-line');
+    if (!data.self || !data.streak) { el.hidden = true; return; }
+    el.hidden = false;
+    const s = data.streak;
+    if (s.run >= 2) el.textContent = `🔥 ${s.run}日連続 · 通算${s.total}日`;
+    else if (s.total > 1) el.textContent = `また今日から · 通算${s.total}日`;
+    else el.textContent = '今日から記録がはじまりました';
   }
 
   $('onboarding-form').addEventListener('submit', (e) => {
@@ -186,6 +198,55 @@
   $('today-clear').addEventListener('click', () => {
     data.today = null;
     persist();
+  });
+
+  // --- 今日の問い ---
+  let reflectionSavedTimer = null;
+
+  function renderQuestion() {
+    const card = $('question-card');
+    if (!data.self) { card.hidden = true; return; }
+    card.hidden = false;
+    const today = todayStr(new Date());
+    const qi = Questions.indexFor(today);
+    $('question-text').textContent = Questions.LIST[qi];
+
+    // 同じ問いへの過去の答え(直近1件)があれば「再会」表示
+    const past = data.reflections
+      .filter((r) => r.q === qi && r.date < today)
+      .sort((a, b) => (a.date < b.date ? 1 : -1))[0];
+    const pastEl = $('question-past');
+    if (past) {
+      const [y, m, d] = past.date.split('-').map(Number);
+      const label = y === new Date().getFullYear() ? `${m}月${d}日` : `${y}年${m}月${d}日`;
+      pastEl.textContent = `前回(${label})のあなた: 「${past.text}」`;
+      pastEl.hidden = false;
+    } else {
+      pastEl.hidden = true;
+    }
+
+    // 当日分を入力欄に反映(入力中はユーザーの手を邪魔しない)
+    const input = $('reflection-input');
+    if (document.activeElement !== input) {
+      const mine = data.reflections.find((r) => r.date === today);
+      input.value = mine ? mine.text : '';
+    }
+  }
+
+  $('reflection-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const text = $('reflection-input').value.trim();
+    if (!text) return;
+    const today = todayStr(new Date());
+    const qi = Questions.indexFor(today);
+    const existing = data.reflections.find((r) => r.date === today);
+    if (existing) { existing.q = qi; existing.text = text; }
+    else data.reflections.push({ date: today, q: qi, text });
+    persist();
+    const saved = $('reflection-saved');
+    saved.hidden = false;
+    clearTimeout(reflectionSavedTimer);
+    reflectionSavedTimer = setTimeout(() => { saved.hidden = true; }, 1600);
   });
 
   // --- 見つめる画面 ---
@@ -551,9 +612,17 @@
   });
 
   // --- 毎秒更新 ---
+  let lastTickDate = todayStr(new Date());
+
   function tick() {
     if (!data || !data.self) return;
-    if ($('screen-self').classList.contains('active')) { renderSelf(); renderPriorities(); renderToday(); }
+    const today = todayStr(new Date());
+    if (today !== lastTickDate) {
+      lastTickDate = today;
+      const newStreak = LifeStore.advanceStreak(data.streak, today);
+      if (newStreak !== data.streak) { data.streak = newStreak; LifeStore.save(localStorage, data); }
+    }
+    if ($('screen-self').classList.contains('active')) { renderSelf(); renderPriorities(); renderToday(); renderQuestion(); }
     if ($('screen-insight').classList.contains('active')) { renderInsight(); renderWeeks(); }
   }
 
@@ -561,6 +630,7 @@
     renderSelf();
     renderPriorities();
     renderToday();
+    renderQuestion();
     renderInsight();
     renderWeeks();
     renderFamily();
@@ -578,6 +648,10 @@
       return; // 黙って初期化しない(復元/リセットはTask 8で配線)
     }
     data = r.data;
+    if (!data.reflections) data.reflections = [];
+    const todayForStreak = todayStr(new Date());
+    const newStreak = LifeStore.advanceStreak(data.streak, todayForStreak);
+    if (newStreak !== data.streak) { data.streak = newStreak; LifeStore.save(localStorage, data); }
     recomputeDeathDates();
     render();
     timerId = setInterval(tick, 1000);

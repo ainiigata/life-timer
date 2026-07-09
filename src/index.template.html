@@ -45,6 +45,7 @@
       </form>
     </div>
     <div id="self-timer" hidden>
+      <p id="streak-line" class="streak-line" hidden></p>
       <p class="timer-label">あなたの残り時間</p>
       <div id="countdown" class="countdown" aria-live="off"></div>
       <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
@@ -67,6 +68,18 @@
           <label class="today-check"><input type="checkbox" id="today-done"> <span id="today-text"></span></label>
           <button type="button" id="today-clear" class="ghost-btn">変更する</button>
         </div>
+      </div>
+      <div id="question-card" class="question-card">
+        <p class="question-label">今日の問い</p>
+        <p id="question-text" class="question-text"></p>
+        <p id="question-past" class="question-past" hidden></p>
+        <form id="reflection-form">
+          <div class="reflection-row">
+            <input type="text" id="reflection-input" maxlength="100" placeholder="一言だけ、残しておく(任意)">
+            <button type="submit">残す</button>
+          </div>
+          <p id="reflection-saved" class="reflection-saved" role="status" hidden>残しました</p>
+        </form>
       </div>
       <section id="priority-section" hidden>
         <h3 class="priority-heading">時間の優先順位</h3>
@@ -183,6 +196,7 @@
 <script>/*<!--INJECT:LIFE_TABLE-->*/</script>
 <script>/*<!--INJECT:TIME_CALC-->*/</script>
 <script>/*<!--INJECT:QUOTES-->*/</script>
+<script>/*<!--INJECT:QUESTIONS-->*/</script>
 <script>/*<!--INJECT:INSIGHT-->*/</script>
 <script>/*<!--INJECT:STORE-->*/</script>
 <script>/*<!--INJECT:APP-->*/</script>
