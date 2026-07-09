@@ -1503,7 +1503,7 @@ dialog::backdrop {
 }
 
 .reflection-row button {
-  width: auto;
+  width: auto !important;
   flex-shrink: 0;
   padding: 0.45rem 0.75rem;
   background: var(--orange);
