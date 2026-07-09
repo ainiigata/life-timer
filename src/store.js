@@ -12,7 +12,11 @@
   const PRIORITIES_REQUIRED = ['家族', '仕事', '自分', '余暇', '睡眠'];
 
   function emptyData() {
-    return { version: 1, self: null, family: [], wishes: [], today: null, priorities: null };
+    return { version: 1, self: null, family: [], wishes: [], today: null, priorities: null, streak: null, reflections: [] };
+  }
+
+  function isDateFormat(s) {
+    return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
   }
 
   function isValidDateStr(s) {
@@ -82,6 +86,23 @@
         return { ok: false, error: 'priorities の内容が不正です' };
       }
     }
+    if (data.streak != null) {
+      const s = data.streak;
+      if (typeof s !== 'object' || !isDateFormat(s.last)
+          || !Number.isInteger(s.run) || s.run < 1
+          || !Number.isInteger(s.total) || s.total < 1
+          || s.run > s.total) {
+        return { ok: false, error: 'streak が不正です' };
+      }
+    }
+    if (data.reflections != null) {
+      if (!Array.isArray(data.reflections)) return { ok: false, error: 'reflections が配列ではありません' };
+      for (const r of data.reflections) {
+        if (!r || !isDateFormat(r.date)) return { ok: false, error: '問いの記録の日付が不正です' };
+        if (!Number.isInteger(r.q) || r.q < 0) return { ok: false, error: '問いの記録のindexが不正です' };
+        if (typeof r.text !== 'string' || r.text === '') return { ok: false, error: '問いの記録のテキストが不正です' };
+      }
+    }
     if (data.today != null) {
       const t = data.today;
       if (typeof t !== 'object') return { ok: false, error: 'today が不正です' };
@@ -128,5 +149,18 @@
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   }
 
-  return { KEY, emptyData, validate, load, save, exportJSON, importJSON, newId, isValidDateStr };
+  // ストリーク更新(純関数)。同日なら同一オブジェクトを返す。totalは決して減らない
+  function advanceStreak(streak, todayStr) {
+    if (streak && streak.last === todayStr) return streak;
+    const d = new Date(todayStr + 'T00:00:00');
+    d.setDate(d.getDate() - 1);
+    const p = (n) => String(n).padStart(2, '0');
+    const yesterday = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+    if (streak && streak.last === yesterday) {
+      return { last: todayStr, run: streak.run + 1, total: streak.total + 1 };
+    }
+    return { last: todayStr, run: 1, total: (streak ? streak.total : 0) + 1 };
+  }
+
+  return { KEY, emptyData, validate, load, save, exportJSON, importJSON, newId, isValidDateStr, advanceStreak };
 });

@@ -201,3 +201,74 @@ test('data.priorities: null は通る(省略扱い)', () => {
   d.priorities = null;
   assert.ok(validate(d).ok);
 });
+
+// --- v3: streak / reflections / advanceStreak ---
+
+test('streak: 正しい形は通る', () => {
+  const d = LifeStore.emptyData();
+  d.streak = { last: '2026-07-09', run: 7, total: 23 };
+  assert.ok(LifeStore.validate(d).ok);
+});
+
+test('streak: run > total はエラー', () => {
+  const d = LifeStore.emptyData();
+  d.streak = { last: '2026-07-09', run: 24, total: 23 };
+  assert.ok(!LifeStore.validate(d).ok);
+});
+
+test('streak: 日付形式が壊れているとエラー', () => {
+  const d = LifeStore.emptyData();
+  d.streak = { last: 'いつか', run: 1, total: 1 };
+  assert.ok(!LifeStore.validate(d).ok);
+});
+
+test('streak: null は通る(旧データ互換)', () => {
+  const d = LifeStore.emptyData();
+  d.streak = null;
+  assert.ok(LifeStore.validate(d).ok);
+});
+
+test('reflections: 正しい配列は通る', () => {
+  const d = LifeStore.emptyData();
+  d.reflections = [{ date: '2026-07-09', q: 12, text: '母さんに電話する' }];
+  assert.ok(LifeStore.validate(d).ok);
+});
+
+test('reflections: text空・q負数はエラー', () => {
+  const d = LifeStore.emptyData();
+  d.reflections = [{ date: '2026-07-09', q: 12, text: '' }];
+  assert.ok(!LifeStore.validate(d).ok);
+  d.reflections = [{ date: '2026-07-09', q: -1, text: 'a' }];
+  assert.ok(!LifeStore.validate(d).ok);
+});
+
+test('reflections: 未定義(旧データ)は通る', () => {
+  const d = JSON.parse(JSON.stringify(VALID)); // v1形式(reflectionsなし)
+  assert.ok(LifeStore.validate(d).ok);
+});
+
+test('advanceStreak: 初回は run=1 total=1', () => {
+  const s = LifeStore.advanceStreak(null, '2026-07-09');
+  assert.deepEqual(s, { last: '2026-07-09', run: 1, total: 1 });
+});
+
+test('advanceStreak: 同日2回目は変化なし(同一オブジェクト)', () => {
+  const s0 = { last: '2026-07-09', run: 3, total: 10 };
+  const s1 = LifeStore.advanceStreak(s0, '2026-07-09');
+  assert.strictEqual(s1, s0);
+});
+
+test('advanceStreak: 昨日開いていたら run+1 total+1', () => {
+  const s = LifeStore.advanceStreak({ last: '2026-07-08', run: 3, total: 10 }, '2026-07-09');
+  assert.deepEqual(s, { last: '2026-07-09', run: 4, total: 11 });
+});
+
+test('advanceStreak: 途切れたら run=1 だが total は増える(やさしいリセット)', () => {
+  const s = LifeStore.advanceStreak({ last: '2026-07-01', run: 30, total: 100 }, '2026-07-09');
+  assert.deepEqual(s, { last: '2026-07-09', run: 1, total: 101 });
+});
+
+test('advanceStreak: 月またぎの連続を正しく判定', () => {
+  const s = LifeStore.advanceStreak({ last: '2026-06-30', run: 5, total: 5 }, '2026-07-01');
+  assert.deepEqual(s, { last: '2026-07-01', run: 6, total: 6 });
+});
