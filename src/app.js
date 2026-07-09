@@ -215,6 +215,34 @@
     });
   }
 
+  // --- Life in Weeks ---
+  function renderWeeks() {
+    const section = $('weeks-grid-section');
+    if (!data.self) { section.hidden = true; return; }
+    section.hidden = false;
+    const grid = $('weeks-grid');
+    const TOTAL = 90 * 52; // 4680
+
+    if (grid.childElementCount !== TOTAL) {
+      const frag = document.createDocumentFragment();
+      for (let i = 0; i < TOTAL; i++) {
+        const cell = document.createElement('span');
+        frag.appendChild(cell);
+      }
+      grid.appendChild(frag);
+    }
+
+    const birth = TimeCalc.parseDate(data.self.birthDate);
+    const now = new Date();
+    const weeksLived = Math.floor((now - birth) / (7 * 24 * 60 * 60 * 1000));
+    const cells = grid.children;
+    for (let i = 0; i < cells.length; i++) {
+      if (i < weeksLived) cells[i].className = 'wc p';
+      else if (i === weeksLived) cells[i].className = 'wc c';
+      else cells[i].className = 'wc f';
+    }
+  }
+
   // --- 家族画面 ---
   const FREQ_LABEL = {
     daily: '毎日会うなら', weekly: '週1で会うなら', monthly: '月1で会うなら',
@@ -526,7 +554,7 @@
   function tick() {
     if (!data || !data.self) return;
     if ($('screen-self').classList.contains('active')) { renderSelf(); renderPriorities(); renderToday(); }
-    if ($('screen-insight').classList.contains('active')) renderInsight();
+    if ($('screen-insight').classList.contains('active')) { renderInsight(); renderWeeks(); }
   }
 
   function render() {
@@ -534,6 +562,7 @@
     renderPriorities();
     renderToday();
     renderInsight();
+    renderWeeks();
     renderFamily();
     renderWishes();
   }

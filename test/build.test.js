@@ -83,3 +83,8 @@ test('今の夢バナー要素がある', () => {
 test('優先順位リスト要素がある', () => {
   assert.ok(html.includes('id="priority-list"'));
 });
+
+test('Life in Weeks グリッド要素がある', () => {
+  assert.ok(html.includes('id="weeks-grid-section"'));
+  assert.ok(html.includes('id="weeks-grid"'));
+});

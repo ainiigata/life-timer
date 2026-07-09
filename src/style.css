@@ -1315,6 +1315,50 @@ dialog::backdrop {
   flex: 0 0 auto;
 }
 
+/* Life in Weeks */
+#weeks-grid-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #f0ece6;
+}
+.weeks-title {
+  font-size: 1rem;
+  margin: 0 0 0.4rem;
+}
+.weeks-note {
+  font-size: 0.75rem;
+  color: #aaa;
+  margin: 0 0 1rem;
+  line-height: 1.5;
+}
+.weeks-grid {
+  display: grid;
+  grid-template-columns: repeat(52, 5px);
+  gap: 1px;
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.weeks-grid .wc {
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 1px;
+}
+.weeks-grid .wc.p {
+  background: var(--orange);
+}
+.weeks-grid .wc.c {
+  background: var(--orange);
+  box-shadow: 0 0 3px var(--orange);
+  outline: 2px solid #c05510;
+  outline-offset: 0;
+}
+.weeks-grid .wc.f {
+  background: transparent;
+  border: 1px solid #e0d0c0;
+}
+
 /* 今の夢バナー */
 .dream-banner {
   background: linear-gradient(135deg, #fff8f2 0%, #fff3e8 100%);
