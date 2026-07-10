@@ -38,7 +38,7 @@ test('script閉じタグの早期終了がない', () => {
   const open = (html.match(/<script>/g) || []).length;
   const close = (html.match(/<\/script>/g) || []).length;
   assert.equal(open, close);
-  assert.equal(open, 7);
+  assert.equal(open, 8);
 });
 
 test('主要モジュールが同梱されている', () => {
@@ -100,4 +100,17 @@ test('ストリーク行と今日の問いカードがある', () => {
 test('Questionsモジュールが同梱されている', () => {
   assert.ok(html.includes('Questions'));
   assert.ok(html.includes('今日、いちばん会いたい人は誰ですか?'));
+});
+
+test('ガチャセクション要素がある', () => {
+  assert.ok(html.includes('id="gacha-section"'));
+  assert.ok(html.includes('id="gacha-pull-btn"'));
+  assert.ok(html.includes('id="gacha-result-area"'));
+  assert.ok(html.includes('id="gacha-overlay"'));
+  assert.ok(html.includes('id="gacha-done-check"'));
+});
+
+test('Gachaモジュールが同梱されている', () => {
+  assert.ok(html.includes('Gacha'));
+  assert.ok(html.includes('今日だけスマホを6時間以上置いてみる'));
 });

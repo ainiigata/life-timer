@@ -12,7 +12,7 @@
   const PRIORITIES_REQUIRED = ['家族', '仕事', '自分', '余暇', '睡眠'];
 
   function emptyData() {
-    return { version: 1, self: null, family: [], wishes: [], today: null, priorities: null, streak: null, reflections: [] };
+    return { version: 1, self: null, family: [], wishes: [], today: null, priorities: null, streak: null, reflections: [], gacha: null };
   }
 
   function isDateFormat(s) {
@@ -109,6 +109,26 @@
       if (typeof t.date !== 'string' || t.date === '') return { ok: false, error: '今日の宣言の日付が不正です' };
       if (typeof t.text !== 'string' || t.text === '') return { ok: false, error: '今日の宣言のテキストが不正です' };
       if (typeof t.done !== 'boolean') return { ok: false, error: '今日の宣言の done が不正です' };
+    }
+    if (data.gacha != null) {
+      const g = data.gacha;
+      if (typeof g !== 'object') return { ok: false, error: 'gacha が不正です' };
+      if (!isDateFormat(g.date)) return { ok: false, error: 'gacha.date が不正です' };
+      if (!Number.isInteger(g.totalXp) || g.totalXp < 0) return { ok: false, error: 'gacha.totalXp が不正です' };
+      if (g.current != null) {
+        const c = g.current;
+        if (typeof c.id !== 'string' || c.id === '') return { ok: false, error: 'gacha.current.id が不正です' };
+        if (!['N', 'R', 'SR', 'SSR'].includes(c.rarity)) return { ok: false, error: 'gacha.current.rarity が不正です' };
+        if (typeof c.text !== 'string' || c.text === '') return { ok: false, error: 'gacha.current.text が不正です' };
+        if (typeof c.xp !== 'number' || c.xp <= 0) return { ok: false, error: 'gacha.current.xp が不正です' };
+        if (typeof c.done !== 'boolean') return { ok: false, error: 'gacha.current.done が不正です' };
+      }
+      if (!Array.isArray(g.history)) return { ok: false, error: 'gacha.history が配列ではありません' };
+      for (const h of g.history) {
+        if (!isDateFormat(h.date)) return { ok: false, error: 'gacha.history[].date が不正です' };
+        if (!['N', 'R', 'SR', 'SSR'].includes(h.rarity)) return { ok: false, error: 'gacha.history[].rarity が不正です' };
+        if (typeof h.text !== 'string' || h.text === '') return { ok: false, error: 'gacha.history[].text が不正です' };
+      }
     }
     return { ok: true };
   }

@@ -272,3 +272,41 @@ test('advanceStreak: 月またぎの連続を正しく判定', () => {
   const s = LifeStore.advanceStreak({ last: '2026-06-30', run: 5, total: 5 }, '2026-07-01');
   assert.deepEqual(s, { last: '2026-07-01', run: 6, total: 6 });
 });
+
+// ── gacha バリデーション ──
+const validGacha = () => ({
+  date: '2026-07-10',
+  totalXp: 15,
+  current: { id: 'n01', rarity: 'N', text: '水を飲む', xp: 1, done: false },
+  history: [{ date: '2026-07-09', rarity: 'R', text: '読書する', xp: 3 }],
+});
+
+test('gacha: 正しい構造は通る', () => {
+  const d = { ...LifeStore.emptyData(), gacha: validGacha() };
+  assert.equal(LifeStore.validate(d).ok, true);
+});
+
+test('gacha: null は通る(旧データ互換)', () => {
+  const d = { ...LifeStore.emptyData(), gacha: null };
+  assert.equal(LifeStore.validate(d).ok, true);
+});
+
+test('gacha: date が不正ならエラー', () => {
+  const d = { ...LifeStore.emptyData(), gacha: { ...validGacha(), date: 'invalid' } };
+  assert.equal(LifeStore.validate(d).ok, false);
+});
+
+test('gacha: totalXp が負数ならエラー', () => {
+  const d = { ...LifeStore.emptyData(), gacha: { ...validGacha(), totalXp: -1 } };
+  assert.equal(LifeStore.validate(d).ok, false);
+});
+
+test('gacha: current.rarity が不正ならエラー', () => {
+  const d = { ...LifeStore.emptyData(), gacha: { ...validGacha(), current: { ...validGacha().current, rarity: 'UR' } } };
+  assert.equal(LifeStore.validate(d).ok, false);
+});
+
+test('gacha: history[].date が不正ならエラー', () => {
+  const d = { ...LifeStore.emptyData(), gacha: { ...validGacha(), history: [{ date: 'bad', rarity: 'N', text: 'x', xp: 1 }] } };
+  assert.equal(LifeStore.validate(d).ok, false);
+});

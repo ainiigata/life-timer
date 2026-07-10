@@ -613,6 +613,122 @@
     location.reload();
   });
 
+  // --- ガチャ ---
+  function renderGacha() {
+    const section = $('gacha-section');
+    if (!data.self) { section.hidden = true; return; }
+    section.hidden = false;
+
+    const g = data.gacha;
+    const totalXp = g ? g.totalXp : 0;
+    const { level, xpInLevel, xpNeeded } = Gacha.levelFromXp(totalXp);
+    $('gacha-lv-badge').textContent = 'Lv.' + level;
+    $('gacha-xp-fill').style.width = Math.min(100, (xpInLevel / xpNeeded) * 100).toFixed(1) + '%';
+    $('gacha-xp-label').textContent = `XP: ${xpInLevel} / ${xpNeeded}`;
+
+    const today = todayStr(new Date());
+    const pulledToday = g && g.date === today && g.current;
+
+    $('gacha-pull-area').hidden = !!pulledToday;
+    $('gacha-result-area').hidden = !pulledToday;
+
+    if (pulledToday) {
+      const c = g.current;
+      const card = $('gacha-result-card');
+      card.className = 'gacha-result-card rarity-' + c.rarity.toLowerCase();
+      $('gacha-rarity-badge').textContent = c.rarity;
+      $('gacha-challenge-text').textContent = c.text;
+      const check = $('gacha-done-check');
+      check.checked = c.done;
+      const earned = $('gacha-xp-earned');
+      if (c.done) {
+        earned.textContent = '+' + c.xp + ' XP 獲得！';
+        earned.hidden = false;
+      } else {
+        earned.hidden = true;
+      }
+    }
+
+    const histSection = $('gacha-history-section');
+    const history = g ? g.history : [];
+    histSection.hidden = history.length === 0;
+    if (history.length > 0) {
+      $('gacha-history-count').textContent = history.length + '件';
+      const list = $('gacha-history-list');
+      list.textContent = '';
+      const recent = [...history].reverse().slice(0, 20);
+      for (const h of recent) {
+        const li = document.createElement('li');
+        li.className = 'gacha-history-item';
+        const [, m, d] = h.date.split('-').map(Number);
+        li.innerHTML = `<span class="gacha-history-badge rarity-${h.rarity.toLowerCase()}"></span><span class="gacha-history-text"></span><span class="gacha-history-date">${m}/${d}</span>`;
+        li.querySelector('.gacha-history-badge').textContent = h.rarity;
+        li.querySelector('.gacha-history-text').textContent = h.text;
+        list.appendChild(li);
+      }
+    }
+  }
+
+  function openGachaOverlay(challenge) {
+    const overlay = $('gacha-overlay');
+    const card = $('go-card');
+    const front = $('go-front');
+    const back = $('go-back');
+    const hint = $('go-hint');
+
+    card.className = 'go-card go-spinning';
+    front.hidden = false;
+    back.hidden = true;
+    hint.textContent = '引いています…';
+    overlay.hidden = false;
+
+    setTimeout(() => {
+      card.className = 'go-card';
+      front.hidden = true;
+      back.hidden = false;
+      back.className = 'go-back rarity-' + challenge.rarity.toLowerCase();
+      $('go-rarity').textContent = challenge.rarity;
+      $('go-text').textContent = challenge.text;
+      $('go-xp').textContent = '+' + challenge.xp + ' XP';
+      hint.textContent = 'タップして閉じる';
+
+      if (challenge.rarity === 'SR' || challenge.rarity === 'SSR') celebrate();
+      overlay.addEventListener('click', () => {
+        overlay.hidden = true;
+        renderGacha();
+      }, { once: true });
+    }, 1200);
+  }
+
+  $('gacha-pull-btn').addEventListener('click', () => {
+    const today = todayStr(new Date());
+    if (data.gacha && data.gacha.date === today) return;
+    const challenge = Gacha.pull();
+    if (!data.gacha) data.gacha = { date: today, current: null, history: [], totalXp: 0 };
+    data.gacha.date = today;
+    data.gacha.current = { ...challenge, done: false };
+    LifeStore.save(localStorage, data);
+    openGachaOverlay(challenge);
+  });
+
+  $('gacha-done-check').addEventListener('change', (e) => {
+    if (!data.gacha || !data.gacha.current) return;
+    const wasAlreadyDone = data.gacha.current.done;
+    data.gacha.current.done = e.target.checked;
+    if (e.target.checked && !wasAlreadyDone) {
+      const c = data.gacha.current;
+      data.gacha.totalXp += c.xp;
+      data.gacha.history.push({ date: data.gacha.date, rarity: c.rarity, text: c.text, xp: c.xp });
+      celebrate();
+    } else if (!e.target.checked && wasAlreadyDone) {
+      const c = data.gacha.current;
+      data.gacha.totalXp = Math.max(0, data.gacha.totalXp - c.xp);
+      data.gacha.history = data.gacha.history.filter((h) => !(h.date === data.gacha.date && h.text === c.text));
+    }
+    LifeStore.save(localStorage, data);
+    renderGacha();
+  });
+
   // --- 毎秒更新 ---
   let lastTickDate = todayStr(new Date());
 
@@ -624,7 +740,7 @@
       const newStreak = LifeStore.advanceStreak(data.streak, today);
       if (newStreak !== data.streak) { data.streak = newStreak; LifeStore.save(localStorage, data); }
     }
-    if ($('screen-self').classList.contains('active')) { renderSelf(); renderPriorities(); renderToday(); renderQuestion(); }
+    if ($('screen-self').classList.contains('active')) { renderSelf(); renderPriorities(); renderToday(); renderQuestion(); renderGacha(); }
     if ($('screen-insight').classList.contains('active')) { renderInsight(); renderWeeks(); }
   }
 
@@ -633,6 +749,7 @@
     renderPriorities();
     renderToday();
     renderQuestion();
+    renderGacha();
     renderInsight();
     renderWeeks();
     renderFamily();
@@ -651,6 +768,7 @@
     }
     data = r.data;
     if (!data.reflections) data.reflections = [];
+    if (!data.gacha) data.gacha = null;
     const todayForStreak = todayStr(new Date());
     const newStreak = LifeStore.advanceStreak(data.streak, todayForStreak);
     if (newStreak !== data.streak) { data.streak = newStreak; LifeStore.save(localStorage, data); }

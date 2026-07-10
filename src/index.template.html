@@ -81,6 +81,29 @@
           <p id="reflection-saved" class="reflection-saved" role="status" hidden>残しました</p>
         </form>
       </div>
+      <section id="gacha-section" hidden>
+        <div class="gacha-header">
+          <p class="gacha-heading">今日のお題</p>
+          <span id="gacha-lv-badge" class="gacha-lv-badge"></span>
+        </div>
+        <div class="gacha-xp-track"><div id="gacha-xp-fill" class="gacha-xp-fill"></div></div>
+        <p id="gacha-xp-label" class="gacha-xp-label"></p>
+        <div id="gacha-pull-area">
+          <button id="gacha-pull-btn" type="button" class="gacha-pull-btn">✦ ガチャを引く！</button>
+        </div>
+        <div id="gacha-result-area" hidden>
+          <div id="gacha-result-card" class="gacha-result-card">
+            <span id="gacha-rarity-badge" class="gacha-rarity-badge"></span>
+            <p id="gacha-challenge-text" class="gacha-challenge-text"></p>
+            <label class="gacha-done-label"><input type="checkbox" id="gacha-done-check"> クリアした！</label>
+            <p id="gacha-xp-earned" class="gacha-xp-earned" hidden></p>
+          </div>
+        </div>
+        <details id="gacha-history-section" hidden>
+          <summary class="gacha-history-summary">クリア記録 <span id="gacha-history-count" class="gacha-history-count"></span></summary>
+          <ul id="gacha-history-list" class="gacha-history-list"></ul>
+        </details>
+      </section>
       <section id="priority-section" hidden>
         <h3 class="priority-heading">時間の優先順位</h3>
         <p class="priority-note">↑↓で並べ替えてみよう</p>
@@ -192,11 +215,25 @@
   <button class="tab-btn" data-tab="wishes">やりたいこと</button>
 </nav>
 <div id="celebrate" hidden aria-hidden="true"></div>
+<div id="gacha-overlay" hidden aria-modal="true" role="dialog">
+  <div class="go-backdrop">
+    <div id="go-card" class="go-card">
+      <div id="go-front" class="go-front"><span class="go-q">?</span></div>
+      <div id="go-back" class="go-back" hidden>
+        <p id="go-rarity" class="go-rarity"></p>
+        <p id="go-text" class="go-text"></p>
+        <p id="go-xp" class="go-xp-num"></p>
+      </div>
+    </div>
+    <p id="go-hint" class="go-hint">引いています…</p>
+  </div>
+</div>
 <footer class="source-note">出典:「令和5年簡易生命表」(厚生労働省)を加工して作成。余命は統計上の平均であり、個人の寿命を予測するものではありません。</footer>
 <script>/*<!--INJECT:LIFE_TABLE-->*/</script>
 <script>/*<!--INJECT:TIME_CALC-->*/</script>
 <script>/*<!--INJECT:QUOTES-->*/</script>
 <script>/*<!--INJECT:QUESTIONS-->*/</script>
+<script>/*<!--INJECT:GACHA-->*/</script>
 <script>/*<!--INJECT:INSIGHT-->*/</script>
 <script>/*<!--INJECT:STORE-->*/</script>
 <script>/*<!--INJECT:APP-->*/</script>
