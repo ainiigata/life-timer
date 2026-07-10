@@ -179,7 +179,9 @@
       $('today-done').checked = t.done;
       $('today-set').classList.toggle('done', t.done);
     } else {
-      $('today-input').value = '';
+      if (document.activeElement !== $('today-input')) {
+        $('today-input').value = '';
+      }
     }
   }
   $('today-form').addEventListener('submit', (e) => {
