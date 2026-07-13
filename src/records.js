@@ -79,50 +79,50 @@
     return WEEKDAY[new Date(y, m - 1, d).getDay()];
   }
 
-  // 全記録をAIに渡せるMarkdownにする。questions は Questions.LIST(問い本文の解決用)
-  function exportMarkdown(data, questions, now) {
+  // 全記録をコピペしやすいプレーンテキストにする。questions は Questions.LIST(問い本文の解決用)
+  function exportText(data, questions, now) {
     const lines = [];
-    lines.push(`# 人生タイマー きろく(${dateStr(now.getFullYear(), now.getMonth() + 1, now.getDate())} 書き出し)`);
+    lines.push(`人生タイマー きろく(${dateStr(now.getFullYear(), now.getMonth() + 1, now.getDate())} 書き出し)`);
     lines.push('');
-    lines.push('## プロフィール');
+    lines.push('■ プロフィール');
     if (data.self) {
-      lines.push(`- 誕生日: ${data.self.birthDate} / 性別: ${GENDER_LABEL[data.self.gender] || data.self.gender}`);
-      lines.push(`- 目標寿命: ${data.self.customLifespan ? data.self.customLifespan + '歳' : '未設定(統計値を使用)'}`);
+      lines.push(`誕生日: ${data.self.birthDate} / 性別: ${GENDER_LABEL[data.self.gender] || data.self.gender}`);
+      lines.push(`目標寿命: ${data.self.customLifespan ? data.self.customLifespan + '歳' : '未設定(統計値を使用)'}`);
     } else {
-      lines.push('- 未設定');
+      lines.push('未設定');
     }
-    if (data.priorities) lines.push(`- 時間の優先順位: ${data.priorities.join(' > ')}`);
+    if (data.priorities) lines.push(`時間の優先順位: ${data.priorities.join(' > ')}`);
     lines.push('');
-    lines.push('## やりたいこと');
+    lines.push('■ やりたいこと');
     const wishes = data.wishes || [];
-    if (wishes.length === 0) lines.push('- (まだありません)');
+    if (wishes.length === 0) lines.push('(まだありません)');
     for (const w of wishes.filter((x) => !x.done)) {
-      let line = `- [ ] ${w.title}`;
+      let line = `・${w.title}`;
       if (w.targetAge) line += `(${w.targetAge}歳までに)`;
       if (w.pinned) line += '★今の夢';
       lines.push(line);
     }
     for (const w of wishes.filter((x) => x.done)) {
-      lines.push(`- [x] ${w.title}${w.doneAt ? `(${w.doneAt} 達成)` : ''}`);
+      lines.push(`・【達成】${w.title}${w.doneAt ? `(${w.doneAt})` : ''}`);
     }
     lines.push('');
-    lines.push('## 日々のきろく');
+    lines.push('■ 日々のきろく');
     const dates = [...allDates(data)].sort();
     if (dates.length === 0) lines.push('(まだ記録がありません)');
     for (const date of dates) {
       lines.push('');
-      lines.push(`### ${date}(${weekdayLabel(date)})`);
+      lines.push(`${date}(${weekdayLabel(date)})`);
       for (const e of dayEntries(data, date)) {
-        if (e.kind === 'note') lines.push(`- ${e.time}【${TYPE_LABEL[e.type]}】${e.text}`);
-        else if (e.kind === 'reflection') lines.push(`- 【問いの答え】Q: ${questions[e.q] || '(不明な問い)'} →「${e.text}」`);
-        else if (e.kind === 'declaration') lines.push(`- 【今日の宣言】${e.text}${e.done ? ' ✅' : ''}`);
-        else if (e.kind === 'gacha') lines.push(`- 【お題クリア】(${e.rarity}) ${e.text}`);
-        else if (e.kind === 'wish-done') lines.push(`- 【叶えた夢】${e.title}`);
+        if (e.kind === 'note') lines.push(`・${e.time}【${TYPE_LABEL[e.type]}】${e.text}`);
+        else if (e.kind === 'reflection') lines.push(`・【問いの答え】Q: ${questions[e.q] || '(不明な問い)'} →「${e.text}」`);
+        else if (e.kind === 'declaration') lines.push(`・【今日の宣言】${e.text}${e.done ? ' ✅' : ''}`);
+        else if (e.kind === 'gacha') lines.push(`・【お題クリア】(${e.rarity}) ${e.text}`);
+        else if (e.kind === 'wish-done') lines.push(`・【叶えた夢】${e.title}`);
       }
     }
     lines.push('');
     return lines.join('\n');
   }
 
-  return { TYPE_LABEL, monthMatrix, dayEntries, datesWithEntries, weekdayLabel, exportMarkdown };
+  return { TYPE_LABEL, monthMatrix, dayEntries, datesWithEntries, weekdayLabel, exportText };
 });

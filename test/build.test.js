@@ -127,11 +127,11 @@ test('きろくタブと画面要素がある', () => {
   assert.ok(html.includes('id="cal-prev"'));
   assert.ok(html.includes('id="cal-next"'));
   assert.ok(html.includes('id="day-detail-list"'));
-  assert.ok(html.includes('id="export-md-copy"'));
-  assert.ok(html.includes('id="export-md-download"'));
+  assert.ok(html.includes('id="export-copy"'));
+  assert.ok(html.includes('id="export-download"'));
 });
 
 test('Recordsモジュールが同梱されている', () => {
   assert.ok(html.includes('monthMatrix'));
-  assert.ok(html.includes('exportMarkdown'));
+  assert.ok(html.includes('exportText'));
 });

@@ -92,37 +92,47 @@ test('datesWithEntries: その月の記録がある日付のSetを返す', () =>
   assert.equal(Records.datesWithEntries(sampleData(), 2026, 6).size, 0);
 });
 
-// --- exportMarkdown ---
+// --- exportText ---
 
 const QUESTIONS = ['問い0', '問い1', '今日、誰を喜ばせたい?'];
 
-test('exportMarkdown: プロフィール・優先順位・やりたいことを含む', () => {
-  const md = Records.exportMarkdown(sampleData(), QUESTIONS, new Date('2026-07-13T15:00:00'));
-  assert.ok(md.includes('# 人生タイマー きろく(2026-07-13 書き出し)'));
-  assert.ok(md.includes('1986-07-04'));
-  assert.ok(md.includes('家族 > 自分 > 仕事 > 余暇 > 睡眠'));
-  assert.ok(md.includes('- [ ] 家族で沖縄に行く(45歳までに)★今の夢'));
-  assert.ok(md.includes('- [x] 富士山に登る(2026-07-10 達成)'));
+test('exportText: プロフィール・優先順位・やりたいことを含む', () => {
+  const txt = Records.exportText(sampleData(), QUESTIONS, new Date('2026-07-13T15:00:00'));
+  assert.ok(txt.includes('人生タイマー きろく(2026-07-13 書き出し)'));
+  assert.ok(txt.includes('■ プロフィール'));
+  assert.ok(txt.includes('1986-07-04'));
+  assert.ok(txt.includes('家族 > 自分 > 仕事 > 余暇 > 睡眠'));
+  assert.ok(txt.includes('・家族で沖縄に行く(45歳までに)★今の夢'));
+  assert.ok(txt.includes('・【達成】富士山に登る(2026-07-10)'));
 });
 
-test('exportMarkdown: 日々のきろくが日付昇順・曜日付き・種類ラベル付きで出る', () => {
-  const md = Records.exportMarkdown(sampleData(), QUESTIONS, new Date('2026-07-13T15:00:00'));
-  const i10 = md.indexOf('### 2026-07-10(金)');
-  const i12 = md.indexOf('### 2026-07-12(日)');
-  const i13 = md.indexOf('### 2026-07-13(月)');
+test('exportText: Markdown記号を含まないプレーンテキストになる', () => {
+  const txt = Records.exportText(sampleData(), QUESTIONS, new Date('2026-07-13T15:00:00'));
+  for (const line of txt.split('\n')) {
+    assert.ok(!/^#/.test(line), 'Markdown見出しが残っている: ' + line);
+    assert.ok(!/^- \[/.test(line), 'チェックボックス記法が残っている: ' + line);
+    assert.ok(!/^- /.test(line), 'リスト記法が残っている: ' + line);
+  }
+});
+
+test('exportText: 日々のきろくが日付昇順・曜日付き・種類ラベル付きで出る', () => {
+  const txt = Records.exportText(sampleData(), QUESTIONS, new Date('2026-07-13T15:00:00'));
+  const i10 = txt.indexOf('2026-07-10(金)');
+  const i12 = txt.indexOf('2026-07-12(日)');
+  const i13 = txt.indexOf('2026-07-13(月)');
   assert.ok(i10 > -1 && i12 > i10 && i13 > i12);
-  assert.ok(md.includes('- 09:12【アイデア】朝の散歩コースを変える'));
-  assert.ok(md.includes('- 12:30【やること】図書館に本を返す'));
-  assert.ok(md.includes('【問いの答え】Q: 今日、誰を喜ばせたい? →「母に電話する」'));
-  assert.ok(md.includes('【今日の宣言】履歴書を書く ✅'));
-  assert.ok(md.includes('【お題クリア】(R) 10分散歩する'));
-  assert.ok(md.includes('【叶えた夢】富士山に登る'));
+  assert.ok(txt.includes('・09:12【アイデア】朝の散歩コースを変える'));
+  assert.ok(txt.includes('・12:30【やること】図書館に本を返す'));
+  assert.ok(txt.includes('【問いの答え】Q: 今日、誰を喜ばせたい? →「母に電話する」'));
+  assert.ok(txt.includes('【今日の宣言】履歴書を書く ✅'));
+  assert.ok(txt.includes('【お題クリア】(R) 10分散歩する'));
+  assert.ok(txt.includes('【叶えた夢】富士山に登る'));
 });
 
-test('exportMarkdown: 空データでも落ちずヘッダを出す', () => {
-  const md = Records.exportMarkdown(LifeStore.emptyData(), QUESTIONS, new Date('2026-07-13T15:00:00'));
-  assert.ok(md.includes('# 人生タイマー きろく(2026-07-13 書き出し)'));
-  assert.ok(md.includes('まだ記録がありません'));
+test('exportText: 空データでも落ちずヘッダを出す', () => {
+  const txt = Records.exportText(LifeStore.emptyData(), QUESTIONS, new Date('2026-07-13T15:00:00'));
+  assert.ok(txt.includes('人生タイマー きろく(2026-07-13 書き出し)'));
+  assert.ok(txt.includes('まだ記録がありません'));
 });
 
 test('TYPE_LABEL: 3種類のラベルを提供する', () => {

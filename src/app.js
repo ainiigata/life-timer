@@ -885,22 +885,22 @@
     persist();
   });
 
-  $('export-md-copy').addEventListener('click', () => {
-    const md = Records.exportMarkdown(data, Questions.LIST, new Date());
+  $('export-copy').addEventListener('click', () => {
+    const txt = Records.exportText(data, Questions.LIST, new Date());
     const result = $('export-result');
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(md).then(
+      navigator.clipboard.writeText(txt).then(
         () => { result.textContent = 'コピーしました。AIに貼り付けて使えます'; },
-        () => { result.textContent = 'コピーできませんでした。「.mdファイルをダウンロード」をお使いください'; }
+        () => { result.textContent = 'コピーできませんでした。ダウンロードをお使いください'; }
       );
     } else {
-      result.textContent = 'この環境ではコピーできません。「.mdファイルをダウンロード」をお使いください';
+      result.textContent = 'この環境ではコピーできません。ダウンロードをお使いください';
     }
   });
 
-  $('export-md-download').addEventListener('click', () => {
-    const md = Records.exportMarkdown(data, Questions.LIST, new Date());
-    downloadBlob(md, 'text/markdown', `life-timer-notes-${new Date().toISOString().slice(0, 10)}.md`);
+  $('export-download').addEventListener('click', () => {
+    const txt = Records.exportText(data, Questions.LIST, new Date());
+    downloadBlob(txt, 'text/plain', `life-timer-notes-${new Date().toISOString().slice(0, 10)}.txt`);
     $('export-result').textContent = 'ダウンロードしました';
   });
 
