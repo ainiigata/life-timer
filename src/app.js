@@ -555,18 +555,20 @@
     persist();
   });
 
-  function downloadJSON() {
-    const blob = new Blob([LifeStore.exportJSON(data)], { type: 'application/json' });
+  function downloadBlob(content, mime, filename) {
+    const blob = new Blob([content], { type: mime });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `life-timer-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   }
-  $('export-json').addEventListener('click', downloadJSON);
+  $('export-json').addEventListener('click', () => {
+    downloadBlob(LifeStore.exportJSON(data), 'application/json', `life-timer-${new Date().toISOString().slice(0, 10)}.json`);
+  });
 
   function readImportFile(file, onOk, resultId = 'import-result') {
     const reader = new FileReader();
@@ -729,6 +731,187 @@
     renderGacha();
   });
 
+  // --- きろく ---
+  let noteType = 'memo';
+  let noteFilter = 'all';
+  let calCursor = null; // 表示中の年月 { y, m }。初回描画時に当月で初期化
+  let selectedDate = todayStr(new Date());
+
+  const KIND_BADGE = { reflection: '問いの答え', declaration: '今日の宣言', gacha: 'お題クリア', 'wish-done': '叶えた夢' };
+
+  function nowTimeStr() {
+    const n = new Date();
+    const p = (x) => String(x).padStart(2, '0');
+    return `${p(n.getHours())}:${p(n.getMinutes())}`;
+  }
+
+  function renderNoteList() {
+    const list = $('note-list');
+    list.textContent = '';
+    const notes = data.notes
+      .filter((n) => noteFilter === 'all' || n.type === noteFilter)
+      .sort((a, b) => (a.date + a.time < b.date + b.time ? 1 : -1))
+      .slice(0, 30);
+    $('note-empty').hidden = notes.length > 0;
+    for (const n of notes) {
+      const li = document.createElement('li');
+      li.className = 'note-item';
+      const [, m, d] = n.date.split('-').map(Number);
+      li.innerHTML = `<span class="note-badge type-${n.type}"></span><span class="note-text"></span>
+        <span class="note-date">${m}/${d}</span><button class="ghost-btn note-del" aria-label="削除">×</button>`;
+      li.querySelector('.note-badge').textContent = Records.TYPE_LABEL[n.type];
+      li.querySelector('.note-text').textContent = n.text;
+      li.querySelector('.note-del').dataset.delNote = n.id;
+      list.appendChild(li);
+    }
+  }
+
+  function renderCalendar() {
+    if (!calCursor) {
+      const n = new Date();
+      calCursor = { y: n.getFullYear(), m: n.getMonth() + 1 };
+    }
+    $('cal-title').textContent = `${calCursor.y}年${calCursor.m}月`;
+    const marked = Records.datesWithEntries(data, calCursor.y, calCursor.m);
+    const today = todayStr(new Date());
+    const grid = $('cal-grid');
+    grid.textContent = '';
+    for (const week of Records.monthMatrix(calCursor.y, calCursor.m)) {
+      for (const date of week) {
+        if (!date) {
+          const sp = document.createElement('span');
+          sp.className = 'cal-day cal-empty';
+          grid.appendChild(sp);
+          continue;
+        }
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'ghost-btn cal-day'
+          + (date === today ? ' cal-today' : '')
+          + (date === selectedDate ? ' cal-selected' : '')
+          + (marked.has(date) ? ' cal-marked' : '');
+        btn.dataset.date = date;
+        btn.textContent = String(Number(date.slice(8)));
+        grid.appendChild(btn);
+      }
+    }
+  }
+
+  function renderDayDetail() {
+    const [, m, d] = selectedDate.split('-').map(Number);
+    $('day-detail-title').textContent = `${m}月${d}日(${Records.weekdayLabel(selectedDate)})のきろく`;
+    const entries = Records.dayEntries(data, selectedDate);
+    $('day-detail-empty').hidden = entries.length > 0;
+    const list = $('day-detail-list');
+    list.textContent = '';
+    for (const e of entries) {
+      const li = document.createElement('li');
+      li.className = 'day-entry';
+      if (e.kind === 'note') {
+        li.innerHTML = `<span class="note-badge type-${e.type}"></span><span class="entry-text"></span>
+          <span class="note-date">${e.time}</span><button class="ghost-btn note-del" aria-label="削除">×</button>`;
+        li.querySelector('.note-badge').textContent = Records.TYPE_LABEL[e.type];
+        li.querySelector('.entry-text').textContent = e.text;
+        li.querySelector('.note-del').dataset.delNote = e.id;
+      } else {
+        li.innerHTML = '<span class="note-badge kind-badge"></span><span class="entry-text"></span>';
+        li.querySelector('.note-badge').textContent = KIND_BADGE[e.kind];
+        let text = '';
+        if (e.kind === 'reflection') text = `Q: ${Questions.LIST[e.q] || ''} →「${e.text}」`;
+        else if (e.kind === 'declaration') text = e.text + (e.done ? ' ✅' : '');
+        else if (e.kind === 'gacha') text = `(${e.rarity}) ${e.text}`;
+        else text = e.title;
+        li.querySelector('.entry-text').textContent = text;
+      }
+      list.appendChild(li);
+    }
+  }
+
+  function renderRecordScreen() {
+    renderNoteList();
+    renderCalendar();
+    renderDayDetail();
+  }
+
+  $('note-type-chips').addEventListener('click', (e) => {
+    const t = e.target.dataset && e.target.dataset.type;
+    if (!t) return;
+    noteType = t;
+    document.querySelectorAll('#note-type-chips .type-chip').forEach((b) => b.classList.toggle('active', b.dataset.type === t));
+  });
+
+  $('note-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const text = $('note-input').value.trim();
+    if (!text) return;
+    data.notes.push({ id: LifeStore.newId(), date: todayStr(new Date()), time: nowTimeStr(), type: noteType, text });
+    $('note-input').value = '';
+    persist();
+  });
+
+  $('note-filter-chips').addEventListener('click', (e) => {
+    const f = e.target.dataset && e.target.dataset.filter;
+    if (!f) return;
+    noteFilter = f;
+    document.querySelectorAll('#note-filter-chips .filter-chip').forEach((b) => b.classList.toggle('active', b.dataset.filter === f));
+    renderNoteList();
+  });
+
+  function moveMonth(delta) {
+    if (!calCursor) return;
+    let { y, m } = calCursor;
+    m += delta;
+    if (m < 1) { m = 12; y--; }
+    if (m > 12) { m = 1; y++; }
+    calCursor = { y, m };
+    renderCalendar();
+  }
+  $('cal-prev').addEventListener('click', () => moveMonth(-1));
+  $('cal-next').addEventListener('click', () => moveMonth(1));
+
+  $('cal-grid').addEventListener('click', (e) => {
+    const date = e.target.dataset && e.target.dataset.date;
+    if (!date) return;
+    selectedDate = date;
+    renderCalendar();
+    renderDayDetail();
+  });
+
+  document.addEventListener('click', (e) => {
+    const id = e.target.dataset && e.target.dataset.delNote;
+    if (!id) return;
+    if (!confirm('このメモを削除しますか?')) return;
+    data.notes = data.notes.filter((n) => n.id !== id);
+    persist();
+  });
+
+  $('export-md-copy').addEventListener('click', () => {
+    const md = Records.exportMarkdown(data, Questions.LIST, new Date());
+    const result = $('export-result');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(md).then(
+        () => { result.textContent = 'コピーしました。AIに貼り付けて使えます'; },
+        () => { result.textContent = 'コピーできませんでした。「.mdファイルをダウンロード」をお使いください'; }
+      );
+    } else {
+      result.textContent = 'この環境ではコピーできません。「.mdファイルをダウンロード」をお使いください';
+    }
+  });
+
+  $('export-md-download').addEventListener('click', () => {
+    const md = Records.exportMarkdown(data, Questions.LIST, new Date());
+    downloadBlob(md, 'text/markdown', `life-timer-notes-${new Date().toISOString().slice(0, 10)}.md`);
+    $('export-result').textContent = 'ダウンロードしました';
+  });
+
+  // 過去日の「今日の宣言」を declarations に移してカレンダーに残す。移したら true
+  function archiveStaleToday(today) {
+    if (!data.today || data.today.date === today) return false;
+    data.declarations.push({ date: data.today.date, text: data.today.text, done: data.today.done });
+    data.today = null;
+    return true;
+  }
+
   // --- 毎秒更新 ---
   let lastTickDate = todayStr(new Date());
 
@@ -737,8 +920,10 @@
     const today = todayStr(new Date());
     if (today !== lastTickDate) {
       lastTickDate = today;
+      let changed = archiveStaleToday(today);
       const newStreak = LifeStore.advanceStreak(data.streak, today);
-      if (newStreak !== data.streak) { data.streak = newStreak; LifeStore.save(localStorage, data); }
+      if (newStreak !== data.streak) { data.streak = newStreak; changed = true; }
+      if (changed) LifeStore.save(localStorage, data);
     }
     if ($('screen-self').classList.contains('active')) { renderSelf(); renderPriorities(); renderToday(); renderQuestion(); renderGacha(); }
     if ($('screen-insight').classList.contains('active')) { renderInsight(); renderWeeks(); }
@@ -750,6 +935,7 @@
     renderToday();
     renderQuestion();
     renderGacha();
+    renderRecordScreen();
     renderInsight();
     renderWeeks();
     renderFamily();
@@ -769,9 +955,13 @@
     data = r.data;
     if (!data.reflections) data.reflections = [];
     if (!data.gacha) data.gacha = null;
+    if (!data.notes) data.notes = [];
+    if (!data.declarations) data.declarations = [];
     const todayForStreak = todayStr(new Date());
+    let dirty = archiveStaleToday(todayForStreak);
     const newStreak = LifeStore.advanceStreak(data.streak, todayForStreak);
-    if (newStreak !== data.streak) { data.streak = newStreak; LifeStore.save(localStorage, data); }
+    if (newStreak !== data.streak) { data.streak = newStreak; dirty = true; }
+    if (dirty) LifeStore.save(localStorage, data);
     recomputeDeathDates();
     render();
     timerId = setInterval(tick, 1000);

@@ -1832,3 +1832,234 @@ dialog::backdrop {
   color: rgba(255,255,255,0.45);
   text-align: center;
 }
+
+/* ============================================================
+   v5: きろく(メモ・カレンダー・書き出し)
+   ============================================================ */
+.tab-btn[data-tab="record"]::after { content: '✎'; font-size: 1.1rem; }
+.tab-btn[data-tab="insight"]::after { content: '◈'; font-size: 1.1rem; }
+
+/* 5タブでも狭い画面で収まるように */
+.tab-btn { min-width: 0; padding: 0 2px; }
+
+.record-block {
+  margin-bottom: 1.75rem;
+}
+
+.record-heading {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  color: var(--brown);
+  margin-bottom: 0.6rem;
+}
+
+/* 種類・フィルタのチップ */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+.ghost-btn.type-chip,
+.ghost-btn.filter-chip {
+  width: auto;
+  padding: 0.32rem 0.75rem;
+  font-size: 0.82rem;
+  border-radius: 999px;
+}
+.ghost-btn.type-chip.active,
+.ghost-btn.filter-chip.active {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: var(--white);
+  font-weight: 700;
+}
+
+/* メモ入力行(reflection-rowと同型) */
+.note-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.note-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--warm-gray);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  background: var(--white);
+  color: var(--brown);
+  font-family: var(--font-sans);
+}
+.note-row input:focus {
+  outline: none;
+  border-color: var(--orange);
+}
+.note-row button {
+  width: auto !important;
+  flex-shrink: 0;
+  padding: 0.55rem 0.9rem !important;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem !important;
+  margin-top: 0 !important;
+}
+
+/* メモ一覧・日別詳細 */
+.note-list,
+.day-detail-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.note-item,
+.day-entry {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--white);
+  border: 1px solid var(--warm-gray-lt);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.7rem;
+}
+.note-badge {
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  background: var(--warm-gray-lt);
+  color: var(--brown-mid);
+  white-space: nowrap;
+}
+.note-badge.type-idea { background: var(--orange-pale); color: var(--orange-dark); }
+.note-badge.type-todo { background: #e8f6ec; color: #2e7d4f; }
+.note-badge.type-memo { background: var(--cream-dark); color: var(--brown-mid); }
+.note-text,
+.entry-text {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--brown);
+  line-height: 1.45;
+  word-break: break-word;
+}
+.note-date {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  color: var(--brown-light);
+  white-space: nowrap;
+}
+.ghost-btn.note-del {
+  width: auto;
+  flex-shrink: 0;
+  border: none;
+  padding: 0.05rem 0.4rem;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* カレンダー */
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+.cal-title {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  color: var(--brown);
+}
+.ghost-btn.cal-nav-btn {
+  width: auto;
+  padding: 0.3rem 0.85rem;
+}
+.cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--brown-light);
+  margin-bottom: 0.3rem;
+}
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.cal-day {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ghost-btn.cal-day {
+  width: auto;
+  min-width: 0;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+}
+.cal-day.cal-empty {
+  border: none;
+  background: none;
+}
+.cal-day.cal-marked::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--orange);
+}
+.cal-day.cal-today {
+  border-color: var(--orange);
+  color: var(--orange-dark);
+  font-weight: 700;
+}
+.ghost-btn.cal-day.cal-selected {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: var(--white);
+  font-weight: 700;
+}
+.cal-day.cal-selected.cal-marked::after {
+  background: var(--white);
+}
+
+/* 日別詳細 */
+.day-detail {
+  margin-top: 0.9rem;
+}
+.day-detail-title {
+  font-size: 0.92rem;
+  color: var(--brown);
+  margin-bottom: 0.45rem;
+}
+#day-detail-empty,
+#note-empty {
+  font-size: 0.85rem;
+  color: var(--brown-light);
+}
+
+/* 書き出し */
+.export-note {
+  font-size: 0.85rem;
+  color: var(--brown-light);
+  line-height: 1.5;
+  margin-bottom: 0.6rem;
+}
+#export-md-copy,
+#export-md-download {
+  margin-top: 0.5rem;
+}
+#export-result {
+  font-size: 0.85rem;
+  color: var(--orange-dark);
+  margin-top: 0.5rem;
+}

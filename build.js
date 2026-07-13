@@ -17,6 +17,7 @@ const INJECTIONS = {
   QUOTES: escapeScript(read('src/quotes.js')),
   QUESTIONS: escapeScript(read('src/questions.js')),
   GACHA: escapeScript(read('src/gacha.js')),
+  RECORDS: escapeScript(read('src/records.js')),
   INSIGHT: escapeScript(read('src/insight.js')),
   STORE: escapeScript(read('src/store.js')),
   APP: escapeScript(read('src/app.js')),

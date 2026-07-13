@@ -140,6 +140,56 @@
       <button id="reset-data" class="danger-btn">リセットして最初から</button>
     </div>
   </section>
+  <!-- きろく -->
+  <section id="screen-record" class="screen">
+    <h1>きろく</h1>
+    <section class="record-block">
+      <form id="note-form">
+        <div id="note-type-chips" class="chip-row" role="group" aria-label="メモの種類">
+          <button type="button" class="ghost-btn type-chip" data-type="idea">💡 アイデア</button>
+          <button type="button" class="ghost-btn type-chip" data-type="todo">✅ やること</button>
+          <button type="button" class="ghost-btn type-chip active" data-type="memo">📝 メモ</button>
+        </div>
+        <div class="note-row">
+          <input type="text" id="note-input" maxlength="500" placeholder="思いついたことを、忘れる前に">
+          <button type="submit">残す</button>
+        </div>
+      </form>
+    </section>
+    <section class="record-block">
+      <h2 class="record-heading">最近のメモ</h2>
+      <div id="note-filter-chips" class="chip-row" role="group" aria-label="メモの絞り込み">
+        <button type="button" class="ghost-btn filter-chip active" data-filter="all">すべて</button>
+        <button type="button" class="ghost-btn filter-chip" data-filter="idea">アイデア</button>
+        <button type="button" class="ghost-btn filter-chip" data-filter="todo">やること</button>
+        <button type="button" class="ghost-btn filter-chip" data-filter="memo">メモ</button>
+      </div>
+      <ul id="note-list" class="note-list"></ul>
+      <p id="note-empty" hidden>思いついたことを上の欄に残してみましょう。</p>
+    </section>
+    <section class="record-block">
+      <h2 class="record-heading">カレンダー</h2>
+      <div class="cal-nav">
+        <button type="button" id="cal-prev" class="ghost-btn cal-nav-btn" aria-label="前の月">◀</button>
+        <span id="cal-title" class="cal-title"></span>
+        <button type="button" id="cal-next" class="ghost-btn cal-nav-btn" aria-label="次の月">▶</button>
+      </div>
+      <div class="cal-weekdays"><span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span></div>
+      <div id="cal-grid" class="cal-grid"></div>
+      <div id="day-detail" class="day-detail">
+        <h3 id="day-detail-title" class="day-detail-title"></h3>
+        <ul id="day-detail-list" class="day-detail-list"></ul>
+        <p id="day-detail-empty" hidden>この日の記録はありません。</p>
+      </div>
+    </section>
+    <section class="record-block">
+      <h2 class="record-heading">きろくを書き出す</h2>
+      <p class="export-note">メモ・問いの答え・宣言・やりたいことなどの全記録をMarkdownで書き出します。AI(Claudeなど)に貼り付けて、振り返りや相談に使えます。</p>
+      <button type="button" id="export-md-copy">Markdownをコピー</button>
+      <button type="button" id="export-md-download">.mdファイルをダウンロード</button>
+      <p id="export-result" role="status"></p>
+    </section>
+  </section>
   <!-- 見つめる -->
   <section id="screen-insight" class="screen">
     <h1>見つめる</h1>
@@ -210,6 +260,7 @@
 </main>
 <nav class="tab-bar">
   <button class="tab-btn active" data-tab="self">わたし</button>
+  <button class="tab-btn" data-tab="record">きろく</button>
   <button class="tab-btn" data-tab="insight">見つめる</button>
   <button class="tab-btn" data-tab="family">家族</button>
   <button class="tab-btn" data-tab="wishes">やりたいこと</button>
@@ -234,6 +285,7 @@
 <script>/*<!--INJECT:QUOTES-->*/</script>
 <script>/*<!--INJECT:QUESTIONS-->*/</script>
 <script>/*<!--INJECT:GACHA-->*/</script>
+<script>/*<!--INJECT:RECORDS-->*/</script>
 <script>/*<!--INJECT:INSIGHT-->*/</script>
 <script>/*<!--INJECT:STORE-->*/</script>
 <script>/*<!--INJECT:APP-->*/</script>

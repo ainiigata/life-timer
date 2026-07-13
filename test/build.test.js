@@ -38,7 +38,7 @@ test('script閉じタグの早期終了がない', () => {
   const open = (html.match(/<script>/g) || []).length;
   const close = (html.match(/<\/script>/g) || []).length;
   assert.equal(open, close);
-  assert.equal(open, 8);
+  assert.equal(open, 9);
 });
 
 test('主要モジュールが同梱されている', () => {
@@ -113,4 +113,25 @@ test('ガチャセクション要素がある', () => {
 test('Gachaモジュールが同梱されている', () => {
   assert.ok(html.includes('Gacha'));
   assert.ok(html.includes('今日だけスマホを6時間以上置いてみる'));
+});
+
+test('きろくタブと画面要素がある', () => {
+  assert.ok(html.includes('data-tab="record"'));
+  assert.ok(html.includes('id="screen-record"'));
+  assert.ok(html.includes('id="note-form"'));
+  assert.ok(html.includes('id="note-input"'));
+  assert.ok(html.includes('id="note-type-chips"'));
+  assert.ok(html.includes('id="note-filter-chips"'));
+  assert.ok(html.includes('id="note-list"'));
+  assert.ok(html.includes('id="cal-grid"'));
+  assert.ok(html.includes('id="cal-prev"'));
+  assert.ok(html.includes('id="cal-next"'));
+  assert.ok(html.includes('id="day-detail-list"'));
+  assert.ok(html.includes('id="export-md-copy"'));
+  assert.ok(html.includes('id="export-md-download"'));
+});
+
+test('Recordsモジュールが同梱されている', () => {
+  assert.ok(html.includes('monthMatrix'));
+  assert.ok(html.includes('exportMarkdown'));
 });
