@@ -11,8 +11,11 @@
   const RELATIONSHIP_RE = /^(child|parent|spouse|sibling|friend|other)$/;
   const PRIORITIES_REQUIRED = ['家族', '仕事', '自分', '余暇', '睡眠'];
 
+  const NOTE_TYPES = ['idea', 'todo', 'memo'];
+  const NOTE_TEXT_MAX = 500;
+
   function emptyData() {
-    return { version: 1, self: null, family: [], wishes: [], today: null, priorities: null, streak: null, reflections: [], gacha: null };
+    return { version: 1, self: null, family: [], wishes: [], today: null, priorities: null, streak: null, reflections: [], gacha: null, notes: [], declarations: [] };
   }
 
   function isDateFormat(s) {
@@ -109,6 +112,26 @@
       if (typeof t.date !== 'string' || t.date === '') return { ok: false, error: '今日の宣言の日付が不正です' };
       if (typeof t.text !== 'string' || t.text === '') return { ok: false, error: '今日の宣言のテキストが不正です' };
       if (typeof t.done !== 'boolean') return { ok: false, error: '今日の宣言の done が不正です' };
+    }
+    if (data.notes != null) {
+      if (!Array.isArray(data.notes)) return { ok: false, error: 'notes が配列ではありません' };
+      for (const n of data.notes) {
+        if (!n || typeof n.id !== 'string' || n.id === '') return { ok: false, error: 'メモのIDが不正です' };
+        if (!isDateFormat(n.date)) return { ok: false, error: 'メモの日付が不正です' };
+        if (typeof n.time !== 'string' || !/^\d{2}:\d{2}$/.test(n.time)) return { ok: false, error: 'メモの時刻が不正です' };
+        if (!NOTE_TYPES.includes(n.type)) return { ok: false, error: 'メモの種類が不正です' };
+        if (typeof n.text !== 'string' || n.text === '' || n.text.length > NOTE_TEXT_MAX) {
+          return { ok: false, error: `メモの本文が不正です(1〜${NOTE_TEXT_MAX}文字)` };
+        }
+      }
+    }
+    if (data.declarations != null) {
+      if (!Array.isArray(data.declarations)) return { ok: false, error: 'declarations が配列ではありません' };
+      for (const dec of data.declarations) {
+        if (!dec || !isDateFormat(dec.date)) return { ok: false, error: '宣言の記録の日付が不正です' };
+        if (typeof dec.text !== 'string' || dec.text === '') return { ok: false, error: '宣言の記録のテキストが不正です' };
+        if (typeof dec.done !== 'boolean') return { ok: false, error: '宣言の記録の done が不正です' };
+      }
     }
     if (data.gacha != null) {
       const g = data.gacha;

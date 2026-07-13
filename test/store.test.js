@@ -310,3 +310,75 @@ test('gacha: history[].date が不正ならエラー', () => {
   const d = { ...LifeStore.emptyData(), gacha: { ...validGacha(), history: [{ date: 'bad', rarity: 'N', text: 'x', xp: 1 }] } };
   assert.equal(LifeStore.validate(d).ok, false);
 });
+
+// --- v5: notes / declarations(きろく) ---
+
+const validNote = () => ({ id: 'n1', date: '2026-07-13', time: '09:12', type: 'idea', text: '朝の散歩コースを変えてみる' });
+
+test('emptyData は notes:[] と declarations:[] を含む', () => {
+  const d = LifeStore.emptyData();
+  assert.deepEqual(d.notes, []);
+  assert.deepEqual(d.declarations, []);
+});
+
+test('notes: 正しい配列は通る(3種類のtype)', () => {
+  const d = LifeStore.emptyData();
+  d.notes = [
+    validNote(),
+    { id: 'n2', date: '2026-07-13', time: '12:30', type: 'todo', text: '図書館に本を返す' },
+    { id: 'n3', date: '2026-07-12', time: '21:00', type: 'memo', text: '今日は子どもとよく笑った' },
+  ];
+  assert.equal(LifeStore.validate(d).ok, true);
+});
+
+test('notes: 未定義(旧データ)は通る', () => {
+  const d = JSON.parse(JSON.stringify(VALID)); // notesなしの旧形式
+  assert.equal(LifeStore.validate(d).ok, true);
+});
+
+test('notes: type が不正ならエラー', () => {
+  const d = LifeStore.emptyData();
+  d.notes = [{ ...validNote(), type: 'diary' }];
+  assert.equal(LifeStore.validate(d).ok, false);
+});
+
+test('notes: text が空・501文字はエラー、500文字は通る', () => {
+  const d = LifeStore.emptyData();
+  d.notes = [{ ...validNote(), text: '' }];
+  assert.equal(LifeStore.validate(d).ok, false);
+  d.notes = [{ ...validNote(), text: 'あ'.repeat(501) }];
+  assert.equal(LifeStore.validate(d).ok, false);
+  d.notes = [{ ...validNote(), text: 'あ'.repeat(500) }];
+  assert.equal(LifeStore.validate(d).ok, true);
+});
+
+test('notes: id欠落・date不正・time不正はエラー', () => {
+  const d = LifeStore.emptyData();
+  d.notes = [{ ...validNote(), id: '' }];
+  assert.equal(LifeStore.validate(d).ok, false);
+  d.notes = [{ ...validNote(), date: '13/07/2026' }];
+  assert.equal(LifeStore.validate(d).ok, false);
+  d.notes = [{ ...validNote(), time: '9時' }];
+  assert.equal(LifeStore.validate(d).ok, false);
+});
+
+test('declarations: 正しい配列は通る', () => {
+  const d = LifeStore.emptyData();
+  d.declarations = [{ date: '2026-07-12', text: '履歴書を書く', done: true }];
+  assert.equal(LifeStore.validate(d).ok, true);
+});
+
+test('declarations: date不正・text空・done非booleanはエラー', () => {
+  const d = LifeStore.emptyData();
+  d.declarations = [{ date: 'bad', text: 'x', done: true }];
+  assert.equal(LifeStore.validate(d).ok, false);
+  d.declarations = [{ date: '2026-07-12', text: '', done: true }];
+  assert.equal(LifeStore.validate(d).ok, false);
+  d.declarations = [{ date: '2026-07-12', text: 'x', done: 'yes' }];
+  assert.equal(LifeStore.validate(d).ok, false);
+});
+
+test('declarations: 未定義(旧データ)は通る', () => {
+  const d = JSON.parse(JSON.stringify(VALID));
+  assert.equal(LifeStore.validate(d).ok, true);
+});
